@@ -1,0 +1,27 @@
+# Backend secrets
+backend/.env
+backend/.env.local
+backend/venv/
+backend/__pycache__/
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+backend/*.pyc
+backend/*.log
+
+# Frontend secrets
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/node_modules/
+frontend/build/
+frontend/npm-debug.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# OS
+Thumbs.db

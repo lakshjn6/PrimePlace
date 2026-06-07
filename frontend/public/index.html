@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#060608" />
+    <meta name="description" content="PrimeMarket — Your subscription marketplace" />
+    <title>PrimeMarket</title>
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html, body {
+        width: 100%;
+        overflow-x: hidden;
+        background: #060608;
+      }
+      body {
+        -webkit-font-smoothing: antialiased;
+      }
+      a { transition: opacity 0.2s; }
+      a:hover { opacity: 0.85; }
+      button:hover { opacity: 0.9; }
+      input, select, textarea { transition: border-color 0.2s; }
+      input:focus, select:focus, textarea:focus { border-color: #7c5cfc !important; }
+      ::-webkit-scrollbar { width: 5px; }
+      ::-webkit-scrollbar-track { background: #0a0a0a; }
+      ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
