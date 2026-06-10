@@ -20,10 +20,10 @@ export const CartProvider = ({ children }) => {
   }, [user]);
 
   const addToCart = async (productId, quantity = 1) => {
-    const { data } = await cartAPI.addToCart({ product: productId, quantity });
-    await fetchCart();
-    return data;
-  };
+  const { data } = await cartAPI.addToCart(productId, quantity);  // ✅ CORRECT!
+  await fetchCart();
+  return data;
+};
 
   const updateItem = async (itemId, quantity) => {
     await cartAPI.updateItem(itemId, { quantity });
