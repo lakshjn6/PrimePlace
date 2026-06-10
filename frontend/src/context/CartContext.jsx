@@ -26,7 +26,7 @@ export const CartProvider = ({ children }) => {
 };
 
   const updateItem = async (itemId, quantity) => {
-    await cartAPI.updateCart(itemId, { quantity });
+    await cartAPI.updateCart(itemId,quantity);
     await fetchCart();
   };
 

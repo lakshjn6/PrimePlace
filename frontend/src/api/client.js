@@ -22,6 +22,7 @@ export const storeAPI = {
   getCategories: () => API.get('/store/categories/'),
   getProducts: (params) => API.get('/store/products/', { params }),
   getProductBySlug: (slug) => API.get(`/store/products/${slug}/`),
+  getProduct:      (slug)   => API.get(`/store/products/${slug}/`),
 };
 
 // Cart
@@ -30,7 +31,7 @@ export const cartAPI = {
   addToCart: (productId, quantity) => 
     API.post('/orders/cart/', { product_id: productId, quantity }),
   updateCart: (productId, quantity) => 
-    API.put(`/orders/cart/${productId}/`, { quantity }),
+    API.patch(`/orders/cart/${productId}/`, { quantity }),
   removeFromCart: (productId) => API.delete(`/orders/cart/${productId}/`),
   clearCart:()=> API.delete('/orders/cart/'),
 };
