@@ -28,10 +28,11 @@ export const storeAPI = {
 export const cartAPI = {
   getCart: () => API.get('/orders/cart/'),
   addToCart: (productId, quantity) => 
-    API.post('/orders/cart/', { product: productId, quantity }),
+    API.post('/orders/cart/', { product_id: productId, quantity }),
   updateCart: (productId, quantity) => 
     API.put(`/orders/cart/${productId}/`, { quantity }),
   removeFromCart: (productId) => API.delete(`/orders/cart/${productId}/`),
+  clearCart:()=> API.delete('/orders/cart/'),
 };
 
 // Orders

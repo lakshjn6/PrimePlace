@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('access_token');
     if (!token) { setLoading(false); return; }
     try {
-      const { data } = await authAPI.profile();
+      const { data } = await authAPI.getProfile();
       setUser(data);
     } catch {
       localStorage.removeItem('access_token');
