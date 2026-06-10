@@ -140,3 +140,9 @@ DEFAULT_FROM_EMAIL = f'PrimeMarket <{EMAIL_HOST_USER}>'
 
 # FRONTEND URL
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
+
+## chnge today 
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:3000'
+).split(',')
