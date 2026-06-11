@@ -105,10 +105,13 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000'
-).split(',')
+# ✅ CORRECT - Removes spaces!
+CORS_ALLOWED_ORIGINS = [
+    url.strip() for url in config(
+        'CORS_ALLOWED_ORIGINS',
+        default='http://localhost:3000'
+    ).split(',')
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # REST FRAMEWORK
@@ -129,10 +132,13 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost:3000'
-).split(',')
+
+CSRF_TRUSTED_ORIGINS = [
+    url.strip() for url in config(
+        'CSRF_TRUSTED_ORIGINS',
+        default='http://localhost:3000'
+    ).split(',')
+]
 
 # EMAIL
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
