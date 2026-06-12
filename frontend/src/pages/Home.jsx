@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { storeAPI } from '../api/client';
+import { useAuth } from '../context/AuthContext';   // ← ADDED
 
 export default function Home() {
+  const { user } = useAuth();                        // ← ADDED
   const [categories, setCategories] = useState([]);
   const [featured,   setFeatured]   = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -41,7 +43,12 @@ export default function Home() {
         </p>
         <div style={{ ...s.heroCtas, flexDirection: isMobile ? 'column' : 'row' }}>
           <Link to="/products" style={s.ctaPrimary}>Browse All Plans</Link>
-          <Link to="/register" style={s.ctaSecondary}>Create Account →</Link>
+          {!user && (
+            <Link to="/register" style={s.ctaSecondary}>Create Account →</Link>
+          )}
+          {user && (
+            <Link to="/profile" style={s.ctaSecondary}>My Account →</Link>
+          )}
         </div>
       </section>
 
@@ -96,9 +103,9 @@ export default function Home() {
         padding: isMobile ? '24px 16px 48px' : '40px 24px 80px',
       }}>
         {[
-          ['1000+', 'Active Subscribers'],
-          ['50+',   'Subscription Plans'],
-          ['10+',   'Categories'],
+          ['100+', 'Active Subscribers'],
+          ['10+',   'Subscription Plans'],
+          ['5+',   'Categories'],
           ['24/7',  'Support'],
         ].map(([num, label]) => (
           <div key={label} style={s.statBox}>
@@ -131,69 +138,35 @@ function ProductCard({ product }) {
 }
 
 const s = {
-  page: {
-    background: '#060608',
-    minHeight: '100vh',
-    color: '#fff',
-    overflowX: 'hidden',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
-
-  // Hero
-  hero: {
-    maxWidth: 860,
-    margin: '0 auto',
-    padding: '72px 20px 56px',
-    textAlign: 'center',
-    position: 'relative',
-    boxSizing: 'border-box',
-    width: '100%',
-  },
-  heroGlow: {
-    position: 'absolute',
-    top: 0,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    width: 500,
-    height: 360,
-    background: 'radial-gradient(ellipse, rgba(124,92,252,0.15) 0%, transparent 70%)',
-    pointerEvents: 'none',
-  },
+  page: { background: '#060608', minHeight: '100vh', color: '#fff', overflowX: 'hidden', width: '100%', boxSizing: 'border-box' },
+  hero: { maxWidth: 860, margin: '0 auto', padding: '72px 20px 56px', textAlign: 'center', position: 'relative', boxSizing: 'border-box', width: '100%' },
+  heroGlow: { position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 500, height: 360, background: 'radial-gradient(ellipse, rgba(124,92,252,0.15) 0%, transparent 70%)', pointerEvents: 'none' },
   heroEyebrow: { color: '#7c5cfc', fontSize: 12, fontWeight: 600, letterSpacing: 2, marginBottom: 14 },
-  heroTitle:   { fontWeight: 900, lineHeight: 1.15, marginBottom: 18, fontFamily: 'Georgia, serif' },
-  accent:      { color: '#7c5cfc', fontStyle: 'italic' },
-  heroSub:     { color: '#888', maxWidth: 500, margin: '0 auto 32px', lineHeight: 1.7 },
-  heroCtas:    { display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'stretch' },
-  ctaPrimary:  { background: '#7c5cfc', color: '#fff', textDecoration: 'none', padding: '13px 28px', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center' },
-  ctaSecondary:{ color: '#aaa', textDecoration: 'none', padding: '13px 28px', border: '1px solid #2a2a2a', borderRadius: 10, fontWeight: 600, fontSize: 15, textAlign: 'center' },
-
-  // Sections
-  section:      { maxWidth: 1200, margin: '0 auto', boxSizing: 'border-box', width: '100%' },
+  heroTitle: { fontWeight: 900, lineHeight: 1.15, marginBottom: 18, fontFamily: 'Georgia, serif' },
+  accent: { color: '#7c5cfc', fontStyle: 'italic' },
+  heroSub: { color: '#888', maxWidth: 500, margin: '0 auto 32px', lineHeight: 1.7 },
+  heroCtas: { display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'stretch' },
+  ctaPrimary: { background: '#7c5cfc', color: '#fff', textDecoration: 'none', padding: '13px 28px', borderRadius: 10, fontWeight: 700, fontSize: 15, textAlign: 'center' },
+  ctaSecondary: { color: '#aaa', textDecoration: 'none', padding: '13px 28px', border: '1px solid #2a2a2a', borderRadius: 10, fontWeight: 600, fontSize: 15, textAlign: 'center' },
+  section: { maxWidth: 1200, margin: '0 auto', boxSizing: 'border-box', width: '100%' },
   sectionTitle: { fontWeight: 800, marginBottom: 20, fontFamily: 'Georgia, serif' },
-  loading:      { color: '#555' },
-  emptyBox:     { textAlign: 'center', padding: '32px 0' },
-
-  // Categories
+  loading: { color: '#555' },
+  emptyBox: { textAlign: 'center', padding: '32px 0' },
   catGrid: { display: 'grid', gap: 12 },
   catCard: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: '18px 10px', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 6 },
   catIcon: { fontSize: 26 },
   catName: { color: '#fff', fontWeight: 600, fontSize: 13 },
-  catCount:{ color: '#666', fontSize: 11 },
-
-  // Products
-  prodGrid:    { display: 'grid', gap: 14 },
-  prodCard:    { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: 18, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10 },
-  prodCatBadge:{ background: 'rgba(124,92,252,0.15)', color: '#7c5cfc', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, width: 'fit-content', letterSpacing: 1 },
-  prodName:    { color: '#fff', fontWeight: 700, fontSize: 16, margin: 0 },
-  prodDesc:    { color: '#666', fontSize: 13, lineHeight: 1.6, margin: 0 },
-  prodFooter:  { display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 'auto' },
-  prodPrice:   { color: '#7c5cfc', fontWeight: 800, fontSize: 22 },
-  prodCycle:   { color: '#555', fontSize: 12 },
-
-  // Stats
+  catCount: { color: '#666', fontSize: 11 },
+  prodGrid: { display: 'grid', gap: 14 },
+  prodCard: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: 18, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10 },
+  prodCatBadge: { background: 'rgba(124,92,252,0.15)', color: '#7c5cfc', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, width: 'fit-content', letterSpacing: 1 },
+  prodName: { color: '#fff', fontWeight: 700, fontSize: 16, margin: 0 },
+  prodDesc: { color: '#666', fontSize: 13, lineHeight: 1.6, margin: 0 },
+  prodFooter: { display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 'auto' },
+  prodPrice: { color: '#7c5cfc', fontWeight: 800, fontSize: 22 },
+  prodCycle: { color: '#555', fontSize: 12 },
   statsRow: { maxWidth: 1200, margin: '0 auto', display: 'grid', gap: 10, boxSizing: 'border-box', width: '100%' },
-  statBox:  { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: '20px 12px', textAlign: 'center' },
-  statNum:  { fontWeight: 900, color: '#7c5cfc', fontFamily: 'Georgia, serif' },
-  statLabel:{ color: '#666', fontSize: 12, marginTop: 6 },
+  statBox: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: '20px 12px', textAlign: 'center' },
+  statNum: { fontWeight: 900, color: '#7c5cfc', fontFamily: 'Georgia, serif' },
+  statLabel: { color: '#666', fontSize: 12, marginTop: 6 },
 };
