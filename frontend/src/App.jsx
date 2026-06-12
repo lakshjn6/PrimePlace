@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import Footer from './pages/Footer';
 
 import Navbar         from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -61,6 +62,7 @@ export default function App() {
                 </div>
               } />
             </Routes>
+            <Footer />
             <Toaster
               position="top-right"
               toastOptions={{
