@@ -5,7 +5,7 @@ import { Toaster } from 'react-hot-toast';
 
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-import Footer from './pages/Footer';
+import Footer from './pages/Footer1';
 
 import Navbar         from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
