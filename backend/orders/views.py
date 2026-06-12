@@ -100,7 +100,7 @@ class CheckoutView(APIView):
             payment_method=data.get('payment_method', 'bank_transfer'),
             payment_screenshot=data.get('payment_screenshot'),
             notes=data.get('notes', ''),
-            status='success',  # Auto-approve; in production admin would verify
+            status='pending',  # Auto-approve; in production admin would verify
         )
 
         # Mark order as paid
