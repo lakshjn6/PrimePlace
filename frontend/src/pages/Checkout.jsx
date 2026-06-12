@@ -252,24 +252,48 @@ export default function Checkout() {
 
                   {/* Bank / QR info */}
                   <div className="co-bank-info">
-                    <h3 className="co-bank-title">📤 Transfer to:</h3>
-                    <img
-                      src={require('../images/scanner.png')}
-                      alt="UPI QR"
-                      className="co-qr-img"
-                    />
-                    <div className="co-bank-row"><span>Bank:</span><strong>State Bank of India</strong></div>
-                    <div className="co-bank-row"><span>Account:</span><strong>12345678901</strong></div>
-                    <div className="co-bank-row"><span>IFSC:</span><strong>SBIN0001234</strong></div>
-                    <div className="co-bank-row"><span>Name:</span><strong>SubFlow Pvt. Ltd.</strong></div>
-                    <div className="co-bank-row">
-                      <span>Amount:</span>
-                      <strong style={{color:'#7c5cfc'}}>₹{cart.total}</strong>
-                    </div>
-                    <p className="co-bank-note">
-                      ⚠️ After transferring, fill the form below with your transaction details.
-                    </p>
-                  </div>
+  <h3 className="co-bank-title">📤 Transfer to:</h3>
+  <img
+    src={require('../images/upi.png')}
+    alt="UPI QR"
+    className="co-qr-img"
+  />
+  <div className="co-bank-row"><span>UPI Id:</span><strong>Akshat263@fam</strong></div>
+  <div className="co-bank-row">
+    <span>Amount:</span>
+    <strong style={{color:'#7c5cfc'}}>₹{cart.total}</strong>
+  </div>
+</div>
+
+<div className="co-bank-info">
+  <h3 className="co-bank-title">📤 Transfer to:</h3>
+  <img
+    src={require('../images/binance.png')}
+    alt="Binance QR"
+    className="co-qr-img"
+  />
+  <div className="co-bank-row"><span>Binance ID:</span><strong>1252939506</strong></div>
+  <div className="co-bank-row">
+    <span>Amount:</span>
+    <strong style={{color:'#7c5cfc'}}>₹{cart.total}</strong>
+  </div>
+</div>
+
+<div className="co-bank-info">
+  <h3 className="co-bank-title">🏦 Bank Transfer:</h3>
+  <div className="co-bank-row"><span>Account Name:</span><strong>UTKARSH JAIN</strong></div>
+  <div className="co-bank-row"><span>Account Number:</span><strong>5010 6081 8564</strong></div>
+  <div className="co-bank-row"><span>IFSC Code:</span><strong>NSPB0000002</strong></div>
+  <div className="co-bank-row"><span>Branch:</span><strong>one international centre,prabhadevi</strong></div>
+  <div className="co-bank-row">
+    <span>Amount:</span>
+    <strong style={{color:'#7c5cfc'}}>₹{cart.total}</strong>
+  </div>
+  <p className="co-bank-note">
+    ⚠️ After transferring, fill the form below with your transaction details.
+  </p>
+</div>
+                  
 
                   {/* Form fields */}
                   <div className="co-field">
@@ -288,8 +312,8 @@ export default function Checkout() {
                     <label className="co-label">Payment Method</label>
                     <select className="co-input" name="payment_method" value={form.payment_method} onChange={handleChange}>
                       <option value="upi">UPI</option>
-                      <option value="bank_transfer">Bank Transfer / NEFT</option>
-                      <option value="cash">Cash Deposit</option>
+                      <option value="bank_transfer">Binance</option>
+                      
                     </select>
                   </div>
                   <div className="co-field">
