@@ -150,6 +150,7 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@primemarket.com')
 
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
 
 # FRONTEND URL
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
