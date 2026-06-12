@@ -66,7 +66,7 @@ def send_verification_email(user, token):
 """
 
     resend.Emails.send({
-        "from": "PrimeMarket <onboarding@resend.dev>",  # use this until you add your domain
+        "from": "PrimeMarket <noreply@primemarket.co.in>",  # use this until you add your domain
         "to": [user.email],
         "subject": "Verify your PrimeMarket account",
         "html": html_message,
