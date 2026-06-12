@@ -8,7 +8,9 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ('product', 'price', 'quantity', 'subtotal')  # ✅ subtotal is property
 
     def subtotal(self, obj):
-        return obj.subtotal
+        if obj.price is None:
+            return '₹0'
+        return f'₹{obj.subtotal}'
     subtotal.short_description = 'Subtotal'
 
 
