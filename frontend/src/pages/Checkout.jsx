@@ -313,6 +313,7 @@ export default function Checkout() {
                     <select className="co-input" name="payment_method" value={form.payment_method} onChange={handleChange}>
                       <option value="upi">UPI</option>
                       <option value="bank_transfer">Binance</option>
+                      <option value="bank_transfer">Bank Transfer</option>
                       
                     </select>
                   </div>
