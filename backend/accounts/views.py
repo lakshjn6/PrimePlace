@@ -23,6 +23,7 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            EmailVerificationToken.objects.filter(user=user).delete()
             token_obj = EmailVerificationToken.objects.create(user=user)
             print(f"DEBUG TOKEN CREATED: {token_obj.token}")
             print(f"DEBUG USER: {user.email}")

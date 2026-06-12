@@ -72,8 +72,7 @@ class Account(AbstractBaseUser):
 import uuid
 
 class EmailVerificationToken(models.Model):
-    user       = models.OneToOneField(Account, on_delete=models.CASCADE,
-                                      related_name='email_token')
+    user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='email_tokens')
     token      = models.UUIDField(default=uuid.uuid4, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
