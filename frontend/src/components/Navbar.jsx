@@ -39,12 +39,12 @@ export default function Navbar() {
     src={require('../images/logo.png')}
     alt="PrimeMarket Logo"
     style={{
-      height: "40px",
+      height: "60px",
       width: "auto",
       objectFit: "contain",
     }}
   />
-  <span style={s.logoText}>PrimeMarket</span>
+ 
 </Link>
 
           {/* Desktop center links */}
