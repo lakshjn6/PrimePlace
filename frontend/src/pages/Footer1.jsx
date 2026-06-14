@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const PRIVACY_POLICY_TEXT = `PrimeMarket Privacy Policy
 
@@ -64,6 +64,52 @@ Website: primemarket.co.in
 Business Location: Rajasthan, India
 For privacy-related questions, please contact us through the contact methods provided on the website.`;
 
+// Inject responsive CSS once
+const CSS = `
+  .pm-social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pm-pay-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pm-mid-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  /* Desktop: everything horizontal */
+  @media (min-width: 640px) {
+    .pm-social-links {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .pm-pay-badges {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+  }
+`;
+
+function InjectStyles() {
+  useEffect(() => {
+    if (document.getElementById('pm-footer-styles')) return;
+    const tag = document.createElement('style');
+    tag.id = 'pm-footer-styles';
+    tag.textContent = CSS;
+    document.head.appendChild(tag);
+    return () => tag.remove();
+  }, []);
+  return null;
+}
+
 function PrivacyModal({ onClose }) {
   return (
     <div style={s.overlay} onClick={onClose}>
@@ -82,6 +128,7 @@ export default function Footer() {
 
   return (
     <>
+      <InjectStyles />
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
 
       <footer style={s.footer}>
@@ -91,7 +138,7 @@ export default function Footer() {
 
           {/* LOGO ROW */}
           <div style={s.logoRow}>
-            <img src="images/logo.png" alt="PrimeMarket" style={s.logoImg} />
+            <img src={require('../images/logo.png')} alt="PrimeMarket" style={s.logoImg} />
             <div style={s.logoTextGroup}>
               <span style={s.logoName}>PrimeMarket</span>
               <span style={s.logoTag}>Rajasthan, India</span>
@@ -101,12 +148,12 @@ export default function Footer() {
           <div style={s.divider} />
 
           {/* MIDDLE ROW */}
-          <div style={s.midRow}>
+          <div className="pm-mid-row">
 
             {/* SOCIALS */}
-            <div>
+            <div style={s.section}>
               <div style={s.sectionLabel}>Connect with us</div>
-              <div style={s.socialLinks}>
+              <div className="pm-social-links">
 
                 {/* Email */}
                 <a href="mailto:primesmarket.in@gmail.com" style={s.socialLink}>
@@ -117,7 +164,7 @@ export default function Footer() {
                 </a>
 
                 {/* Telegram */}
-                <a href="https://t.me/@utkarsh_bst_1" target="_blank" rel="noopener noreferrer" style={s.socialLink}>
+                <a href="https://t.me/utkarsh_bst_1" target="_blank" rel="noopener noreferrer" style={s.socialLink}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="12" fill="#2AABEE"/>
                     <path d="M17.5 7L5.5 11.5l3.5 1L10.5 17l2-3 3 2.5L17.5 7z" fill="white"/>
@@ -148,18 +195,18 @@ export default function Footer() {
             </div>
 
             {/* PAYMENTS */}
-            <div>
+            <div style={s.section}>
               <div style={s.sectionLabel}>Payment accepted</div>
-              <div style={s.payBadges}>
+              <div className="pm-pay-badges">
 
                 {/* UPI */}
                 <div style={s.payBadge}>
-                  <img src="images/up.png" alt="UPI" style={s.payImg} />
+                  <img src={require('../images/up.png')} alt="UPI" style={s.payImg} />
                 </div>
 
                 {/* Binance */}
                 <div style={s.payBadge}>
-                  <img src="images/bin.png" alt="Binance" style={s.payImg} />
+                  <img src={require('../images/bin.png')} alt="Binance" style={s.payImg} />
                 </div>
 
               </div>
@@ -217,25 +264,18 @@ const s = {
   logoName: { fontSize: 16, fontWeight: 700, color: '#e8e0ff', letterSpacing: 0.3 },
   logoTag: { fontSize: 10, color: '#555', letterSpacing: 1, textTransform: 'uppercase' },
   divider: { height: 1, background: '#1a1a2e' },
-  midRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 24,
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-  },
+  section: { width: '100%' },
   sectionLabel: {
     fontSize: 9, letterSpacing: 1.5,
     textTransform: 'uppercase', color: '#444', marginBottom: 10,
   },
-  socialLinks: { display: 'flex', flexDirection: 'column', gap: 8 },
   socialLink: {
     display: 'flex', alignItems: 'center', gap: 9,
     textDecoration: 'none', color: '#888', fontSize: 12,
     padding: '7px 12px', borderRadius: 8,
     border: '1px solid #1a1a2e', background: '#0e0e18',
+    whiteSpace: 'nowrap',
   },
-  payBadges: { display: 'flex', gap: 10, flexWrap: 'wrap' },
   payBadge: {
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     background: '#0e0e18', border: '1px solid #1e1e32',
