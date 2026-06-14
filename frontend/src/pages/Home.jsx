@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { storeAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';   // ← ADDED
+import ReviewSection from '../components/ReviewSection'; 
 
 export default function Home() {
   const { user } = useAuth();                        // ← ADDED
@@ -114,6 +115,7 @@ export default function Home() {
           </div>
         ))}
       </section>
+      <ReviewSection />
 
     </div>
   );

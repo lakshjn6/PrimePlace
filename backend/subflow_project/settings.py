@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'orders',
     'cloudinary_storage',
     'cloudinary',
+    'reviews', 
 ]
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
