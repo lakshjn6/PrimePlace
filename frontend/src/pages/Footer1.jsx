@@ -61,7 +61,7 @@ Users must be at least 13 years old to register and use PrimeMarket services.
 
 12. Contact Information
 Website: primemarket.co.in
-Business Location: Rajasthan, India
+Business Location:India
 For privacy-related questions, please contact us through the contact methods provided on the website.`;
 
 // Inject responsive CSS once
@@ -142,7 +142,6 @@ export default function Footer() {
             <img src={require('../images/logo.png')} alt="PrimeMarket" style={s.logoImg} />
             <div style={s.logoTextGroup}>
               <span style={s.logoName}>PrimeMarket</span>
-              <span style={s.logoTag}>Rajasthan, India</span>
             </div>
           </div>
 
