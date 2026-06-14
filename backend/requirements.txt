@@ -11,3 +11,4 @@ python-dotenv
 resend
 cloudinary
 django-cloudinary-storage
+pandas
