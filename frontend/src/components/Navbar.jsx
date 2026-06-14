@@ -129,7 +129,7 @@ export default function Navbar() {
                   </div>
                 </div>
                 <button style={s.mobileLogout} onClick={handleLogout}>
-                  🚪 Logout
+                   Logout
                 </button>
               </>
             ) : (
