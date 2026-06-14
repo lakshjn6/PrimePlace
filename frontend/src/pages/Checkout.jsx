@@ -5,20 +5,87 @@ import { useAuth } from '../context/AuthContext';
 import { ordersAPI } from '../api/client';
 import toast from 'react-hot-toast';
 
+// ── Currency Converter ─────────────────────────────────────────────────────────
+function UsdConverter({ inr }) {
+  const [usd, setUsd]         = useState(null);
+  const [rate, setRate]       = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState(null);
+
+  const convert = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res  = await fetch('https://api.exchangerate-api.com/v4/latest/INR');
+      const data = await res.json();
+      const r    = data.rates.USD;
+      setRate(r);
+      setUsd((parseFloat(inr) * r).toFixed(2));
+    } catch {
+      setError('Could not fetch rate. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      background: '#080810', border: '1px solid #2a2a4a',
+      borderRadius: 14, padding: '16px 20px',
+      display: 'flex', flexDirection: 'column', gap: 10,
+    }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
+        <span style={{ color:'#888', fontSize:13 }}>💱 Convert ₹{inr} to USD</span>
+        <button
+          type="button"
+          onClick={convert}
+          disabled={loading}
+          style={{
+            background: '#1a1a3a', border: '1px solid #3a3a6a',
+            color: '#a78bfa', borderRadius: 8, padding: '7px 16px',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          }}
+        >
+          {loading ? 'Fetching...' : '🔄 Get Live Rate'}
+        </button>
+      </div>
+
+      {usd && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: '#0e0e1e', borderRadius: 10, padding: '12px 16px',
+        }}>
+          <span style={{ color:'#555', fontSize:13 }}>₹{inr} INR =</span>
+          <span style={{ color:'#7c5cfc', fontWeight:800, fontSize:22 }}>
+            ${usd} <span style={{ fontSize:13, color:'#555' }}>USD</span>
+          </span>
+        </div>
+      )}
+      {rate && (
+        <span style={{ color:'#444', fontSize:11, textAlign:'right' }}>
+          1 INR = {rate.toFixed(5)} USD · live rate
+        </span>
+      )}
+      {error && <span style={{ color:'#f5a623', fontSize:13 }}>{error}</span>}
+    </div>
+  );
+}
+
+// ── Main Checkout ──────────────────────────────────────────────────────────────
 export default function Checkout() {
   const { cart, fetchCart, clearCart } = useCart();
   const { user }                       = useAuth();
   const navigate                       = useNavigate();
-  const [step, setStep]                = useState(1); // 1=Review 2=Pay 3=Success
+  const [step, setStep]                = useState(1);
   const [order, setOrder]              = useState(null);
   const [loading, setLoading]          = useState(false);
   const [form, setForm]                = useState({
-    payer_name:          user ? `${user.first_name} ${user.last_name}` : '',
-    payer_email:         user?.email || '',
-    transaction_ref:     '',
-    payment_method:      'upi',
-    payment_screenshot:  null,
-    notes:               '',
+    payer_name:         user ? `${user.first_name} ${user.last_name}` : '',
+    payer_email:        user?.email || '',
+    transaction_ref:    '',
+    payment_method:     'upi',
+    payment_screenshot: null,
+    notes:              '',
   });
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
@@ -28,33 +95,30 @@ export default function Checkout() {
     setForm(f => ({ ...f, [name]: files ? files[0] : value }));
   };
 
-  // ── THE FIX: use FormData so file uploads work ──────────────────────────────
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.transaction_ref.trim()) { toast.error('Enter transaction reference'); return; }
 
     setLoading(true);
     try {
-      // Build FormData — this fixes "submitted data is not a file" error
       const fd = new FormData();
       fd.append('payer_name',      form.payer_name);
       fd.append('payer_email',     form.payer_email);
       fd.append('transaction_ref', form.transaction_ref);
       fd.append('payment_method',  form.payment_method);
       fd.append('notes',           form.notes || '');
-      // Only append screenshot if user actually chose a file
       if (form.payment_screenshot instanceof File) {
         fd.append('payment_screenshot', form.payment_screenshot);
       }
 
-      const { data } = await ordersAPI.checkout(fd);   // pass FormData not plain object
+      const { data } = await ordersAPI.checkout(fd);
       setOrder(data.order);
       await clearCart();
       setStep(3);
     } catch (err) {
       const errs = err.response?.data;
       const msg  = typeof errs === 'object'
-        ? Object.entries(errs).map(([k,v]) => `${k}: ${Array.isArray(v)?v.join(', '):v}`).join(' | ')
+        ? Object.entries(errs).map(([k,v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ')
         : String(errs);
       toast.error(msg || 'Something went wrong');
     } finally {
@@ -70,7 +134,6 @@ export default function Checkout() {
         .co-page      { background:#060608; min-height:100vh; color:#fff; }
         .co-container { max-width:1000px; margin:0 auto; padding:48px 24px; box-sizing:border-box; }
 
-        /* Step indicator */
         .co-steps { display:flex; gap:24px; margin-bottom:40px; align-items:center; flex-wrap:wrap; }
         .co-step-item   { display:flex; align-items:center; gap:10px; }
         .co-step-circle {
@@ -83,7 +146,6 @@ export default function Checkout() {
         .co-step-label  { color:#555; font-size:14px; font-weight:500; }
         .co-step-label.active { color:#fff; }
 
-        /* 2-col layout */
         .co-layout {
           display:grid;
           grid-template-columns:1fr 300px;
@@ -98,7 +160,6 @@ export default function Checkout() {
         }
         .co-card-title { color:#fff; font-weight:700; font-size:22px; margin:0; font-family:Georgia,serif; }
 
-        /* Order items in review step */
         .co-order-item {
           display:flex; justify-content:space-between; align-items:center;
           padding:16px 0; border-bottom:1px solid #1e1e2e;
@@ -107,8 +168,7 @@ export default function Checkout() {
         .co-order-cat   { color:#555; font-size:13px; margin-top:4px; }
         .co-order-price { color:#7c5cfc; font-weight:700; font-size:18px; flex-shrink:0; }
 
-        /* Bank info box */
-        .co-bank-info  {
+        .co-bank-info {
           background:#080810; border:1px solid #2a2a4a;
           border-radius:14px; padding:20px;
           display:flex; flex-direction:column; gap:10px;
@@ -125,7 +185,16 @@ export default function Checkout() {
           padding:8px; background:#fff; display:block; margin:0 auto 8px;
         }
 
-        /* Form fields */
+        .co-upi-btn {
+          display:flex; align-items:center; justify-content:center; gap:8px;
+          background:linear-gradient(135deg,#7c5cfc,#a78bfa);
+          color:#fff; text-decoration:none; font-weight:700; font-size:15px;
+          border-radius:12px; padding:13px 20px;
+          box-shadow:0 4px 16px #7c5cfc44;
+          transition:opacity 0.2s;
+        }
+        .co-upi-btn:hover { opacity:0.88; }
+
         .co-field { display:flex; flex-direction:column; gap:6px; }
         .co-label { color:#888; font-size:12px; font-weight:600; letter-spacing:0.5px; }
         .co-input {
@@ -139,7 +208,6 @@ export default function Checkout() {
           margin-top:8px; object-fit:cover;
         }
 
-        /* Action buttons */
         .co-form-actions { display:flex; gap:12px; flex-wrap:wrap; }
         .co-back-btn {
           background:transparent; border:1px solid #2a2a2a; color:#888;
@@ -157,7 +225,6 @@ export default function Checkout() {
         }
         .co-submit-btn:disabled, .co-next-btn:disabled { opacity:0.6; cursor:not-allowed; }
 
-        /* Right summary */
         .co-summary {
           background:#0e0e12; border:1px solid #1e1e2e; border-radius:16px;
           padding:24px; position:sticky; top:88px;
@@ -168,41 +235,15 @@ export default function Checkout() {
         .co-summary-total { display:flex; justify-content:space-between; font-weight:700; color:#fff; font-size:18px; }
         .co-divider       { border-top:1px solid #1e1e2e; }
 
-        /* Success screen */
-        .co-success-page {
-          background:#060608; min-height:100vh;
-          display:flex; align-items:center; justify-content:center; padding:24px;
-        }
-        .co-success-card {
-          background:#0e0e12; border:1px solid #1e1e2e; border-radius:24px;
-          padding:48px; text-align:center; max-width:480px; width:100%; box-sizing:border-box;
-        }
-        .co-success-icon {
-          width:80px; height:80px; background:rgba(76,175,80,0.15);
-          border:2px solid #4caf50; border-radius:50%;
-          display:flex; align-items:center; justify-content:center;
-          font-size:36px; color:#4caf50; margin:0 auto 24px;
-        }
-        .co-success-title { color:#fff; font-size:32px; font-weight:800; margin:0 0 8px; font-family:Georgia,serif; }
-        .co-success-sub   { color:#888; font-size:16px; margin:0 0 24px; }
-        .co-success-note  {
-          color:#555; font-size:14px; line-height:1.7;
-          background:#0a0a15; border-radius:12px; padding:16px; text-align:left;
-        }
-        .co-success-btns  { display:flex; flex-direction:column; gap:12px; margin-top:24px; }
-
-        /* ── Mobile ── */
         @media (max-width: 768px) {
           .co-container { padding:24px 16px; }
           .co-layout    { grid-template-columns:1fr; gap:20px; }
           .co-summary   { position:static; }
           .co-card      { padding:20px 16px; }
           .co-steps     { gap:12px; margin-bottom:28px; }
-          .co-step-label{ display:none; }   /* hide text labels, show only circles */
+          .co-step-label{ display:none; }
           .co-form-actions { flex-direction:column; }
           .co-back-btn, .co-submit-btn { flex:unset; width:100%; }
-          .co-success-card { padding:32px 20px; }
-          .co-success-title { font-size:24px; }
         }
       `}</style>
 
@@ -222,8 +263,6 @@ export default function Checkout() {
           </div>
 
           <div className="co-layout">
-
-            {/* ── Left — step content ── */}
             <div>
 
               {/* STEP 1 — Review */}
@@ -250,52 +289,73 @@ export default function Checkout() {
                 <form onSubmit={handleSubmit} className="co-card">
                   <h2 className="co-card-title">Payment Details</h2>
 
-                  {/* Bank / QR info */}
+                  {/* ── UPI ── */}
                   <div className="co-bank-info">
-  <h3 className="co-bank-title">📤 Transfer to:</h3>
-  <img
-    src={require('../images/upi.png')}
-    alt="UPI QR"
-    className="co-qr-img"
-  />
-  <div className="co-bank-row"><span>UPI Id:</span><strong>Akshat263@fam</strong></div>
-  <div className="co-bank-row">
-    <span>Amount:</span>
-    <strong style={{color:'#7c5cfc'}}>₹{cart.total}</strong>
-  </div>
-</div>
+                    <h3 className="co-bank-title">📤 Pay via UPI</h3>
+                    <img
+                      src={require('../images/upi1.png')}
+                      alt="UPI QR"
+                      className="co-qr-img"
+                    />
+                    <div className="co-bank-row">
+                      <span>UPI Id:</span><strong>jaintech@fam</strong>
+                    </div>
+                    <div className="co-bank-row">
+                      <span>Amount:</span>
+                      <strong style={{ color:'#7c5cfc' }}>₹{cart.total}</strong>
+                    </div>
+                    {/* ✅ FIXED: <a tag was missing opening bracket */}
+                    <a
+                      href={`upi://pay?pa=jaintech@fam&pn=Akshat&am=${cart.total}&tn=PrimeMarketPurchase`}
+                      className="co-upi-btn"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14M5 12l7 7 7-7"/>
+                      </svg>
+                      Tap to Pay ₹{cart.total} via UPI
+                    </a>
+                    <p className="co-bank-note">
+                      ⚡ Opens GPay / PhonePe / Paytm automatically on your phone.
+                    </p>
+                  </div>
 
-<div className="co-bank-info">
-  <h3 className="co-bank-title">📤 Transfer to:</h3>
-  <img
-    src={require('../images/binance.png')}
-    alt="Binance QR"
-    className="co-qr-img"
-  />
-  <div className="co-bank-row"><span>Binance ID:</span><strong>1252939506</strong></div>
-  <div className="co-bank-row">
-    <span>Amount:</span>
-    <strong style={{color:'#7c5cfc'}}>₹{cart.total}</strong>
-  </div>
-</div>
+                  {/* ── INR → USD Converter ── */}
+                  <UsdConverter inr={cart.total} />
 
-<div className="co-bank-info">
-  <h3 className="co-bank-title">🏦 Bank Transfer:</h3>
-  <div className="co-bank-row"><span>Account Name:</span><strong>UTKARSH JAIN</strong></div>
-  <div className="co-bank-row"><span>Account Number:</span><strong>5010 6081 8564</strong></div>
-  <div className="co-bank-row"><span>IFSC Code:</span><strong>NSPB0000002</strong></div>
-  <div className="co-bank-row"><span>Branch:</span><strong>one international centre,prabhadevi</strong></div>
-  <div className="co-bank-row">
-    <span>Amount:</span>
-    <strong style={{color:'#7c5cfc'}}>₹{cart.total}</strong>
-  </div>
-  <p className="co-bank-note">
-    ⚠️ After transferring, fill the form below with your transaction details.
-  </p>
-</div>
-                  
+                  {/* ── Binance ── */}
+                  <div className="co-bank-info">
+                    <h3 className="co-bank-title">📤 Pay via Binance</h3>
+                    <img
+                      src={require('../images/binance.png')}
+                      alt="Binance QR"
+                      className="co-qr-img"
+                    />
+                    <div className="co-bank-row">
+                      <span>Binance ID:</span><strong>1252939506</strong>
+                    </div>
+                    <div className="co-bank-row">
+                      <span>Amount:</span>
+                      <strong style={{ color:'#7c5cfc' }}>₹{cart.total}</strong>
+                    </div>
+                  </div>
 
-                  {/* Form fields */}
+                  {/* ── Bank Transfer ── */}
+                  <div className="co-bank-info">
+                    <h3 className="co-bank-title">🏦 Bank Transfer</h3>
+                    <div className="co-bank-row"><span>Account Name:</span><strong>UTKARSH JAIN</strong></div>
+                    <div className="co-bank-row"><span>Account Number:</span><strong>5010 6081 8564</strong></div>
+                    <div className="co-bank-row"><span>IFSC Code:</span><strong>NSPB0000002</strong></div>
+                    <div className="co-bank-row"><span>Branch:</span><strong>one international centre, prabhadevi</strong></div>
+                    <div className="co-bank-row">
+                      <span>Amount:</span>
+                      <strong style={{ color:'#7c5cfc' }}>₹{cart.total}</strong>
+                    </div>
+                    <p className="co-bank-note">
+                      ⚠️ After transferring, fill the form below with your transaction details.
+                    </p>
+                  </div>
+
+                  {/* ── Form fields ── */}
                   <div className="co-field">
                     <label className="co-label">Your Name *</label>
                     <input className="co-input" name="payer_name" value={form.payer_name} onChange={handleChange} required />
@@ -312,16 +372,15 @@ export default function Checkout() {
                     <label className="co-label">Payment Method</label>
                     <select className="co-input" name="payment_method" value={form.payment_method} onChange={handleChange}>
                       <option value="upi">UPI</option>
-                      <option value="bank_transfer">Binance</option>
+                      <option value="binance">Binance</option>
                       <option value="bank_transfer">Bank Transfer</option>
-                      
                     </select>
                   </div>
                   <div className="co-field">
                     <label className="co-label">Payment Screenshot (optional but recommended)</label>
                     <input
                       className="co-input"
-                      style={{padding:'10px 14px'}}
+                      style={{ padding:'10px 14px' }}
                       type="file"
                       name="payment_screenshot"
                       accept="image/*"
@@ -339,7 +398,7 @@ export default function Checkout() {
                     <label className="co-label">Notes (optional)</label>
                     <textarea
                       className="co-input"
-                      style={{height:80, resize:'vertical'}}
+                      style={{ height:80, resize:'vertical' }}
                       name="notes"
                       value={form.notes}
                       onChange={handleChange}
@@ -362,7 +421,7 @@ export default function Checkout() {
               <h3 className="co-summary-title">Order Total</h3>
               {cart.items.map(item => (
                 <div key={item.id} className="co-summary-item">
-                  <span style={{overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'160px'}}>
+                  <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'160px' }}>
                     {item.product.name}
                   </span>
                   <span>₹{item.subtotal}</span>
@@ -382,31 +441,49 @@ export default function Checkout() {
   );
 }
 
+// ── Success Screen ─────────────────────────────────────────────────────────────
 function SuccessScreen({ order, navigate }) {
   return (
     <>
       <style>{`
-        .co-success-page{background:#060608;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-        .co-success-card{background:#0e0e12;border:1px solid #1e1e2e;border-radius:24px;padding:48px;text-align:center;max-width:480px;width:100%;box-sizing:border-box;}
-        .co-success-icon{width:80px;height:80px;background:rgba(76,175,80,0.15);border:2px solid #4caf50;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;color:#4caf50;margin:0 auto 24px;}
-        .co-success-title{color:#fff;font-size:32px;font-weight:800;margin:0 0 8px;font-family:Georgia,serif;}
-        .co-success-sub{color:#888;font-size:16px;margin:0 0 24px;}
-        .co-success-note{color:#555;font-size:14px;line-height:1.7;background:#0a0a15;border-radius:12px;padding:16px;text-align:left;}
-        .co-success-btns{display:flex;flex-direction:column;gap:12px;margin-top:24px;}
-        .co-next-btn{background:#7c5cfc;color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:700;cursor:pointer;width:100%;}
-        .co-back-btn2{background:transparent;border:1px solid #2a2a2a;color:#888;border-radius:10px;padding:12px 20px;font-size:15px;cursor:pointer;width:100%;}
-        @media(max-width:480px){.co-success-card{padding:28px 16px;}.co-success-title{font-size:22px;}}
+        .co-success-page {
+          background:#060608; min-height:100vh;
+          display:flex; align-items:center; justify-content:center; padding:24px;
+        }
+        .co-success-card {
+          background:#0e0e12; border:1px solid #1e1e2e; border-radius:24px;
+          padding:48px; text-align:center; max-width:480px; width:100%; box-sizing:border-box;
+        }
+        .co-success-icon {
+          width:80px; height:80px; background:rgba(76,175,80,0.15);
+          border:2px solid #4caf50; border-radius:50%;
+          display:flex; align-items:center; justify-content:center;
+          font-size:36px; color:#4caf50; margin:0 auto 24px;
+        }
+        .co-success-title { color:#fff; font-size:32px; font-weight:800; margin:0 0 8px; font-family:Georgia,serif; }
+        .co-success-sub   { color:#888; font-size:16px; margin:0 0 24px; }
+        .co-success-note  {
+          color:#555; font-size:14px; line-height:1.7;
+          background:#0a0a15; border-radius:12px; padding:16px; text-align:left;
+        }
+        .co-success-btns  { display:flex; flex-direction:column; gap:12px; margin-top:24px; }
+        .co-next-btn  { background:#7c5cfc; color:#fff; border:none; border-radius:12px; padding:14px; font-size:16px; font-weight:700; cursor:pointer; width:100%; }
+        .co-back-btn2 { background:transparent; border:1px solid #2a2a2a; color:#888; border-radius:10px; padding:12px 20px; font-size:15px; cursor:pointer; width:100%; }
+        @media(max-width:480px) {
+          .co-success-card  { padding:28px 16px; }
+          .co-success-title { font-size:22px; }
+        }
       `}</style>
       <div className="co-success-page">
         <div className="co-success-card">
           <div className="co-success-icon">✓</div>
           <h1 className="co-success-title">Payment Received!</h1>
           <p className="co-success-sub">Your order has been placed successfully.</p>
-          <div style={{color:'#aaa', fontSize:15, marginBottom:8}}>
-            Order: <strong style={{color:'#fff'}}>{order.order_number}</strong>
+          <div style={{ color:'#aaa', fontSize:15, marginBottom:8 }}>
+            Order: <strong style={{ color:'#fff' }}>{order.order_number}</strong>
           </div>
-          <div style={{color:'#fff', fontSize:18, fontWeight:700, marginBottom:16}}>
-            Total: <strong style={{color:'#7c5cfc'}}>₹{order.total_amount}</strong>
+          <div style={{ color:'#fff', fontSize:18, fontWeight:700, marginBottom:16 }}>
+            Total: <strong style={{ color:'#7c5cfc' }}>₹{order.total_amount}</strong>
           </div>
           <p className="co-success-note">
             We'll verify your payment and activate your subscriptions within 24 hours.
