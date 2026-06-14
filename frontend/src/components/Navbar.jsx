@@ -33,17 +33,25 @@ export default function Navbar() {
         <div style={s.inner}>
 
           {/* Logo */}
+          
           <Link to="/" style={s.logo}>
-            <span style={s.logoIcon}>◈</span>
-            <span style={s.logoText}>PrimeMarket</span>
-          </Link>
+  <img
+    src={require('../images/logo.png')}
+    alt="PrimeMarket Logo"
+    style={{
+      height: "40px",
+      width: "auto",
+      objectFit: "contain",
+    }}
+  />
+  <span style={s.logoText}>PrimeMarket</span>
+</Link>
 
           {/* Desktop center links */}
           {!isMobile && (
             <div style={s.links}>
               <Link to="/"         style={s.link}>Home</Link>
               <Link to="/products" style={s.link}>Plans</Link>
-              {user?.is_admin && <Link to="/admin-dashboard" style={s.link}>Admin</Link>}
             </div>
           )}
 
