@@ -73,7 +73,8 @@ const CSS = `
   }
   .pm-pay-badges {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+     flex-wrap: wrap;
     gap: 10px;
   }
   .pm-mid-row {
