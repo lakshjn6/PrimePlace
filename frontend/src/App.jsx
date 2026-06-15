@@ -2,7 +2,7 @@ import React from 'react';
 import VerifyEmail from './pages/VerifyEmail';  
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import ScrollToTop from './components/ScrollToTop';
+import ScrollToTop from './components/Scrolltotop';
 
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
