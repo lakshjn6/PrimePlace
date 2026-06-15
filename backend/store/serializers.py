@@ -24,10 +24,13 @@ class ProductSerializer(serializers.ModelSerializer):
                   'price', 'billing_cycle', 'image', 'is_active',
                   'is_featured', 'created_at']
     
-    def get_image_url(self, obj):         
-        if not obj.image:
-            return None
-        return obj.image.url       
+    def get_image_url(self, obj):
+        try:
+            if obj.image and obj.image.name:
+                return obj.image.url   # ← Cloudinary direct URL
+        except Exception:
+            pass
+        return None      
 
     def validate_price(self, value):
         if value <= 0:
