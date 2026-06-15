@@ -70,7 +70,7 @@ export default function ProductDetail() {
         /* Mobile-only image block — hidden on desktop */
         .pd-img-block { display: none; }
         .pd-img-block img {
-          width: 100%; height: 70%;
+          width: 100%; height: 100%;
           object-fit: cover; display: block;
         }
 
@@ -159,7 +159,7 @@ export default function ProductDetail() {
           .pd-img-block {
             display: block;
             order: 1; margin-bottom: 20px;
-            width: 100%; height: 220px;
+            width: 100%; height: 154px;
             border-radius: 14px; overflow: hidden;
             background: #111;
           }
