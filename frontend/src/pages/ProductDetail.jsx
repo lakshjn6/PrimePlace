@@ -47,7 +47,6 @@ export default function ProductDetail() {
 
   return (
     <>
-      {/* ── Mobile-safe styles ── */}
       <style>{`
         .pd-page      { background: #060608; min-height: 100vh; color: #fff; }
         .pd-container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; box-sizing: border-box; }
@@ -56,8 +55,8 @@ export default function ProductDetail() {
           background: none; border: none; color: #666; cursor: pointer;
           font-size: 14px; margin-bottom: 32px; padding: 0;
         }
+        .pd-back:hover { color: #aaa; }
 
-        /* Two-col layout on desktop, single col on mobile */
         .pd-layout {
           display: grid;
           grid-template-columns: 1fr 380px;
@@ -82,13 +81,28 @@ export default function ProductDetail() {
         .pd-feature-item   { color: #bbb; font-size: 15px; display: flex; gap: 10px; align-items: flex-start; }
         .pd-check          { color: #7c5cfc; font-weight: 700; flex-shrink: 0; }
 
-        /* Pricing card — sticky on desktop, normal flow on mobile */
-        .pd-right       { position: sticky; top: 88px; }
+        /* Pricing card */
+        .pd-right { position: sticky; top: 88px; }
         .pd-pricing-card {
           background: #0e0e12; border: 1px solid #2a2a3a;
-          border-radius: 20px; padding: 32px;
-          display: flex; flex-direction: column; gap: 16px;
+          border-radius: 20px; overflow: hidden;
+          display: flex; flex-direction: column;
         }
+
+        /* ── NEW: image at top of card ── */
+        .pd-card-img-wrapper {
+          width: 100%;
+          height: 180px;
+          background: #111;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .pd-card-img-wrapper img {
+          width: 100%; height: 100%;
+          object-fit: cover; display: block;
+        }
+
+        .pd-card-body    { padding: 28px; display: flex; flex-direction: column; gap: 16px; }
         .pd-pricing-top  { border-bottom: 1px solid #1e1e2e; padding-bottom: 20px; }
         .pd-price-row    { display: flex; align-items: baseline; gap: 8px; }
         .pd-price        { font-size: 48px; font-weight: 900; color: #7c5cfc; }
@@ -99,27 +113,41 @@ export default function ProductDetail() {
           background: transparent; border: 2px solid #7c5cfc; color: #7c5cfc;
           border-radius: 12px; padding: 13px 20px; font-size: 16px;
           font-weight: 700; cursor: pointer; width: 100%;
+          transition: background 0.15s;
         }
+        .pd-add-btn:hover:not(:disabled) { background: rgba(124,92,252,0.1); }
         .pd-add-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
         .pd-buy-btn {
           background: #7c5cfc; border: none; color: #fff;
           border-radius: 12px; padding: 14px 20px; font-size: 16px;
           font-weight: 700; cursor: pointer; width: 100%;
+          transition: background 0.15s;
         }
-        .pd-guarantees { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+        .pd-buy-btn:hover { background: #6a4de0; }
+
+        .pd-guarantees { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
         .pd-guarantee  { color: #555; font-size: 13px; }
 
-        /* ── Mobile breakpoint ── */
+        /* ── Mobile ── */
         @media (max-width: 768px) {
-          .pd-container { padding: 24px 16px; }
-          .pd-layout    {
-            grid-template-columns: 1fr;   /* stack vertically */
-            gap: 32px;
+          .pd-container { padding: 20px 16px 40px; }
+          .pd-layout {
+            grid-template-columns: 1fr;
+            gap: 28px;
           }
-          .pd-right     { position: static; }  /* no sticky on mobile */
-          .pd-title     { font-size: 28px; }
-          .pd-price     { font-size: 36px; }
-          .pd-pricing-card { padding: 20px; }
+          /* On mobile: card comes FIRST (above the text info) */
+          .pd-right  { position: static; order: -1; }
+          .pd-left   { order: 1; }
+
+          .pd-title  { font-size: 26px; }
+          .pd-price  { font-size: 36px; }
+
+          .pd-card-img-wrapper { height: 200px; }   /* taller on phone for impact */
+          .pd-card-body        { padding: 20px; gap: 14px; }
+
+          .pd-add-btn,
+          .pd-buy-btn { font-size: 15px; padding: 13px 16px; }
         }
       `}</style>
 
@@ -154,30 +182,44 @@ export default function ProductDetail() {
             {/* ── Right — pricing card ── */}
             <div className="pd-right">
               <div className="pd-pricing-card">
-                <div className="pd-pricing-top">
-                  <div className="pd-price-row">
-                    <span className="pd-price">₹{product.price}</span>
-                    <span className="pd-cycle">/{product.billing_cycle}</span>
+
+                {/* Product image — top of card, above price */}
+                {product.image_url && (
+                  <div className="pd-card-img-wrapper">
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                    />
                   </div>
-                  <p className="pd-pricing-desc">Billed {product.billing_cycle}. Cancel anytime.</p>
+                )}
+
+                <div className="pd-card-body">
+                  <div className="pd-pricing-top">
+                    <div className="pd-price-row">
+                      <span className="pd-price">₹{product.price}</span>
+                      <span className="pd-cycle">/{product.billing_cycle}</span>
+                    </div>
+                    <p className="pd-pricing-desc">Valid for {product.billing_cycle}</p>
+                  </div>
+
+                  <button className="pd-add-btn" onClick={handleAddToCart} disabled={adding}>
+                    {adding ? 'Adding...' : '🛒 Add to Cart'}
+                  </button>
+
+                  <button className="pd-buy-btn" onClick={async () => {
+                    await handleAddToCart();
+                    navigate('/cart');
+                  }}>
+                    Buy Now →
+                  </button>
+
+                  <div className="pd-guarantees">
+                    <div className="pd-guarantee">🔒 Secure payment</div>
+                    <div className="pd-guarantee">♻️ Fast delivery</div>
+                  </div>
                 </div>
 
-                <button className="pd-add-btn" onClick={handleAddToCart} disabled={adding}>
-                  {adding ? 'Adding...' : '🛒 Add to Cart'}
-                </button>
-
-                <button className="pd-buy-btn" onClick={async () => {
-                  await handleAddToCart();
-                  navigate('/cart');
-                }}>
-                  Buy Now →
-                </button>
-
-                <div className="pd-guarantees">
-                  <div className="pd-guarantee">🔒 Secure payment</div>
-                  <div className="pd-guarantee">♻️ Easy cancellation</div>
-                  <div className="pd-guarantee">🧾 Instant receipt</div>
-                </div>
               </div>
             </div>
 
