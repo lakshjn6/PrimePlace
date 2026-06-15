@@ -82,6 +82,7 @@ export default function Home() {
       {/* Featured Plans */}
       {featured.length > 0 && (
         <section style={{ ...s.section, padding: isMobile ? '32px 16px' : '60px 24px' }}>
+          
           <h2 style={{ ...s.sectionTitle, fontSize: isMobile ? 22 : 32 }}>Featured Plans</h2>
           <div style={{
             ...s.prodGrid,
@@ -124,6 +125,16 @@ export default function Home() {
 function ProductCard({ product }) {
   return (
     <Link to={`/products/${product.slug}`} style={s.prodCard}>
+      {product.image_url && (
+        <div style={s.imgWrapper}>
+          <img
+            src={product.image_url}
+            alt={product.name}
+            style={s.img}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </div>
+      )}
       <div style={s.prodCatBadge}>{product.category_name}</div>
       <h3 style={s.prodName}>{product.name}</h3>
       <p style={s.prodDesc}>
@@ -171,4 +182,13 @@ const s = {
   statBox: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: '20px 12px', textAlign: 'center' },
   statNum: { fontWeight: 900, color: '#7c5cfc', fontFamily: 'Georgia, serif' },
   statLabel: { color: '#666', fontSize: 12, marginTop: 6 },
+   imgWrapper: {
+  width: '100%', height: 160, borderRadius: 12,
+  overflow: 'hidden', marginBottom: 4,
+  background: '#111',
+},
+img: {
+  width: '100%', height: '100%',
+  objectFit: 'cover', display: 'block',
+},
 };
