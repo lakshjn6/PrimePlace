@@ -16,21 +16,21 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     category_slug = serializers.CharField(source='category.slug', read_only=True)
+    image_url     = serializers.SerializerMethodField() 
 
     class Meta:
         model  = Product
         fields = ['id', 'category', 'category_name', 'category_slug',
                   'name', 'slug', 'description', 'features',
-                  'price', 'billing_cycle', 'image', 'is_active',
+                  'price', 'billing_cycle', 'image_url', 'is_active',
                   'is_featured', 'created_at']
     
-    def get_image_url(self, obj):
+    def get_image_url(self, obj): 
         try:
-            if obj.image and obj.image.name:
-                return obj.image.url   # ← Cloudinary direct URL
+            return obj.image.url
         except Exception:
-            pass
-        return None      
+            return None
+    
 
     def validate_price(self, value):
         if value <= 0:

@@ -91,7 +91,7 @@ function ProductCard({ product, onAddToCart }) {
       {product.image_url && (
         <div style={s.imgWrapper}>
           <img
-            src={product.image}
+            src={product.image_url}
             alt={product.name}
             style={s.img}
             onError={(e) => { e.target.style.display = 'none'; }}
