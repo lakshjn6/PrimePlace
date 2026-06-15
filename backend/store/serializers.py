@@ -23,6 +23,14 @@ class ProductSerializer(serializers.ModelSerializer):
                   'name', 'slug', 'description', 'features',
                   'price', 'billing_cycle', 'image', 'is_active',
                   'is_featured', 'created_at']
+    
+    def get_image_url(self, obj):         
+        if not obj.image:
+            return None
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url        
 
     def validate_price(self, value):
         if value <= 0:

@@ -83,18 +83,33 @@ export default function Products() {
 
 function ProductCard({ product, onAddToCart }) {
   const features = Array.isArray(product.features) ? product.features : [];
+
   return (
     <div style={s.card}>
+
+      {/* ── Product Image ── */}
+      {product.image_url && (
+        <div style={s.imgWrapper}>
+          <img
+            src={product.image_url}
+            alt={product.name}
+            style={s.img}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </div>
+      )}
+
       <div style={s.cardTop}>
         <span style={s.catBadge}>{product.category_name}</span>
         {product.is_featured && <span style={s.featuredBadge}>⭐ Featured</span>}
       </div>
-      <h3 style={s.cardName}>{product.name}</h3>
-      <p style={s.cardDesc}>{product.description.slice(0, 100)}{product.description.length > 100 ? '…' : ''}</p>
 
+      <h3 style={s.cardName}>{product.name}</h3>
+
+      {/* ── Description removed, features instead ── */}
       {features.length > 0 && (
         <ul style={s.features}>
-          {features.slice(0,4).map((f,i) => (
+          {features.slice(0, 4).map((f, i) => (
             <li key={i} style={s.featureItem}>✓ {f}</li>
           ))}
         </ul>
@@ -141,4 +156,13 @@ const s = {
   cardActions: { display:'flex', gap:8 },
   viewBtn: { textDecoration:'none', color:'#aaa', border:'1px solid #2a2a2a', padding:'8px 14px', borderRadius:8, fontSize:13, fontWeight:500 },
   addBtn: { background:'#7c5cfc', color:'#fff', border:'none', padding:'8px 16px', borderRadius:8, fontSize:13, fontWeight:700, cursor:'pointer' },
+  imgWrapper: {
+  width: '100%', height: 160, borderRadius: 12,
+  overflow: 'hidden', marginBottom: 4,
+  background: '#111',
+},
+img: {
+  width: '100%', height: '100%',
+  objectFit: 'cover', display: 'block',
+},
 };
