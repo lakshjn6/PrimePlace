@@ -57,14 +57,33 @@ export default function ProductDetail() {
         }
         .pd-back:hover { color: #aaa; }
 
+        /* ── Desktop: two-col grid ── */
         .pd-layout {
           display: grid;
           grid-template-columns: 1fr 380px;
+          grid-template-rows: auto;
           gap: 60px;
           align-items: start;
         }
 
-        .pd-left  { display: flex; flex-direction: column; gap: 16px; }
+        /* Desktop left column: image + info stacked */
+        .pd-left { display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Standalone image block ── */
+        .pd-img-block {
+          width: 100%;
+          height: 320px;
+          border-radius: 16px;
+          overflow: hidden;
+          background: #111;
+        }
+        .pd-img-block img {
+          width: 100%; height: 100%;
+          object-fit: cover; display: block;
+        }
+
+        /* ── Info block ── */
+        .pd-info { display: flex; flex-direction: column; gap: 14px; }
 
         .pd-cat-badge {
           background: rgba(124,92,252,0.15); color: #7c5cfc;
@@ -75,34 +94,19 @@ export default function ProductDetail() {
         .pd-title    { font-size: 42px; font-weight: 900; margin: 0; font-family: Georgia,serif; line-height: 1.1; }
         .pd-desc     { color: #888; font-size: 16px; line-height: 1.8; margin: 0; }
 
-        .pd-features-box   { background: #0e0e12; border: 1px solid #1e1e2e; border-radius: 16px; padding: 24px; margin-top: 8px; }
+        .pd-features-box   { background: #0e0e12; border: 1px solid #1e1e2e; border-radius: 16px; padding: 24px; }
         .pd-features-title { color: #fff; font-weight: 700; font-size: 16px; margin: 0 0 16px; }
         .pd-feature-list   { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
         .pd-feature-item   { color: #bbb; font-size: 15px; display: flex; gap: 10px; align-items: flex-start; }
         .pd-check          { color: #7c5cfc; font-weight: 700; flex-shrink: 0; }
 
-        /* Pricing card */
+        /* ── Right: pricing card (desktop sticky) ── */
         .pd-right { position: sticky; top: 88px; }
         .pd-pricing-card {
           background: #0e0e12; border: 1px solid #2a2a3a;
-          border-radius: 20px; overflow: hidden;
-          display: flex; flex-direction: column;
+          border-radius: 20px; padding: 28px;
+          display: flex; flex-direction: column; gap: 16px;
         }
-
-        /* ── NEW: image at top of card ── */
-        .pd-card-img-wrapper {
-          width: 100%;
-          height: 180px;
-          background: #111;
-          overflow: hidden;
-          flex-shrink: 0;
-        }
-        .pd-card-img-wrapper img {
-          width: 100%; height: 100%;
-          object-fit: cover; display: block;
-        }
-
-        .pd-card-body    { padding: 28px; display: flex; flex-direction: column; gap: 16px; }
         .pd-pricing-top  { border-bottom: 1px solid #1e1e2e; padding-bottom: 20px; }
         .pd-price-row    { display: flex; align-items: baseline; gap: 8px; }
         .pd-price        { font-size: 48px; font-weight: 900; color: #7c5cfc; }
@@ -126,28 +130,39 @@ export default function ProductDetail() {
         }
         .pd-buy-btn:hover { background: #6a4de0; }
 
-        .pd-guarantees { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
+        .pd-guarantees { display: flex; gap: 16px; padding-top: 4px; flex-wrap: wrap; }
         .pd-guarantee  { color: #555; font-size: 13px; }
 
-        /* ── Mobile ── */
+        /* ════════════════════════════════════════
+           MOBILE  — single column, explicit order
+           order: image → name/desc → features → buy card
+        ════════════════════════════════════════ */
         @media (max-width: 768px) {
-          .pd-container { padding: 20px 16px 40px; }
+          .pd-container { padding: 20px 16px 48px; }
+
           .pd-layout {
             grid-template-columns: 1fr;
-            gap: 28px;
+            gap: 0;                  /* gaps controlled per-block below */
           }
-          /* On mobile: card comes FIRST (above the text info) */
-          .pd-right  { position: static; order: -1; }
-          .pd-left   { order: 1; }
+
+          /* Reorder blocks */
+          .pd-img-block    { order: 1; margin-bottom: 20px;
+                             height: 220px; border-radius: 14px; }
+          .pd-info         { order: 2; margin-bottom: 24px; gap: 12px; }
+          .pd-features-box { order: 3; margin-bottom: 24px; }
+          .pd-right        { order: 4; position: static; }
+
+          /* pd-left is the grid cell containing image + info + features —
+             make it a flex column so order works on its children */
+          .pd-left { gap: 0; }
 
           .pd-title  { font-size: 26px; }
           .pd-price  { font-size: 36px; }
 
-          .pd-card-img-wrapper { height: 200px; }   /* taller on phone for impact */
-          .pd-card-body        { padding: 20px; gap: 14px; }
-
+          .pd-pricing-card { padding: 20px; gap: 14px; border-radius: 16px; }
           .pd-add-btn,
           .pd-buy-btn { font-size: 15px; padding: 13px 16px; }
+          .pd-guarantees { gap: 12px; }
         }
       `}</style>
 
@@ -158,13 +173,29 @@ export default function ProductDetail() {
 
           <div className="pd-layout">
 
-            {/* ── Left — info ── */}
+            {/* ── Left column (desktop) — image + info + features ── */}
             <div className="pd-left">
-              <span className="pd-cat-badge">{product.category_name}</span>
-              {product.is_featured && <span className="pd-featured">⭐ Featured Plan</span>}
-              <h1 className="pd-title">{product.name}</h1>
-              <p className="pd-desc">{product.description}</p>
 
+              {/* 1. Standalone image block */}
+              {product.image_url && (
+                <div className="pd-img-block">
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                  />
+                </div>
+              )}
+
+              {/* 2. Name + description */}
+              <div className="pd-info">
+                <span className="pd-cat-badge">{product.category_name}</span>
+                {product.is_featured && <span className="pd-featured">⭐ Featured Plan</span>}
+                <h1 className="pd-title">{product.name}</h1>
+                <p className="pd-desc">{product.description}</p>
+              </div>
+
+              {/* 3. Features */}
               {features.length > 0 && (
                 <div className="pd-features-box">
                   <h3 className="pd-features-title">What's included</h3>
@@ -177,47 +208,35 @@ export default function ProductDetail() {
                   </ul>
                 </div>
               )}
+
             </div>
 
-            {/* ── Right — pricing card ── */}
+            {/* ── Right column (desktop) / bottom block (mobile) — buy card ── */}
             <div className="pd-right">
               <div className="pd-pricing-card">
 
-                {/* Product image — top of card, above price */}
-                {product.image_url && (
-                  <div className="pd-card-img-wrapper">
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      onError={(e) => { e.target.parentElement.style.display = 'none'; }}
-                    />
+                <div className="pd-pricing-top">
+                  <div className="pd-price-row">
+                    <span className="pd-price">₹{product.price}</span>
+                    <span className="pd-cycle">/{product.billing_cycle}</span>
                   </div>
-                )}
+                  <p className="pd-pricing-desc">Valid for {product.billing_cycle}</p>
+                </div>
 
-                <div className="pd-card-body">
-                  <div className="pd-pricing-top">
-                    <div className="pd-price-row">
-                      <span className="pd-price">₹{product.price}</span>
-                      <span className="pd-cycle">/{product.billing_cycle}</span>
-                    </div>
-                    <p className="pd-pricing-desc">Valid for {product.billing_cycle}</p>
-                  </div>
+                <button className="pd-add-btn" onClick={handleAddToCart} disabled={adding}>
+                  {adding ? 'Adding...' : '🛒 Add to Cart'}
+                </button>
 
-                  <button className="pd-add-btn" onClick={handleAddToCart} disabled={adding}>
-                    {adding ? 'Adding...' : '🛒 Add to Cart'}
-                  </button>
+                <button className="pd-buy-btn" onClick={async () => {
+                  await handleAddToCart();
+                  navigate('/cart');
+                }}>
+                  Buy Now →
+                </button>
 
-                  <button className="pd-buy-btn" onClick={async () => {
-                    await handleAddToCart();
-                    navigate('/cart');
-                  }}>
-                    Buy Now →
-                  </button>
-
-                  <div className="pd-guarantees">
-                    <div className="pd-guarantee">🔒 Secure payment</div>
-                    <div className="pd-guarantee">♻️ Fast delivery</div>
-                  </div>
+                <div className="pd-guarantees">
+                  <div className="pd-guarantee">🔒 Secure payment</div>
+                  <div className="pd-guarantee">♻️ Fast delivery</div>
                 </div>
 
               </div>
