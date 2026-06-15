@@ -27,10 +27,7 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):         
         if not obj.image:
             return None
-        request = self.context.get('request')
-        if request:
-            return request.build_absolute_uri(obj.image.url)
-        return obj.image.url        
+        return obj.image.url       
 
     def validate_price(self, value):
         if value <= 0:
