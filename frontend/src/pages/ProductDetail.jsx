@@ -70,7 +70,7 @@ export default function ProductDetail() {
         /* Mobile-only image block — hidden on desktop */
         .pd-img-block { display: none; }
         .pd-img-block img {
-          width: 100%; height: 100%;
+          width: 100%; height: 70%;
           object-fit: cover; display: block;
         }
 
