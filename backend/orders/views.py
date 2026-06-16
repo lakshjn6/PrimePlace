@@ -104,7 +104,7 @@ class CheckoutView(APIView):
         )
 
         # Mark order as paid
-        order.status = 'paid'
+        order.status = 'pending'
         order.save()
 
         # Clear cart
