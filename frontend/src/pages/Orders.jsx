@@ -70,6 +70,13 @@ export default function Orders() {
         .ord-total  { color:#aaa; font-size:16px; }
         .ord-ref    { color:#444; font-size:12px; }
 
+        .ord-pending-msg {
+          display:flex; align-items:center; gap:8px;
+          background:rgba(245,166,35,0.1); border:1px solid rgba(245,166,35,0.3);
+          color:#f5a623; font-size:13px; font-weight:600;
+          border-radius:10px; padding:10px 14px; margin-bottom:20px;
+        }
+
         /* Mobile */
         @media (max-width: 600px) {
           .ord-container { padding:24px 16px; }
@@ -110,6 +117,12 @@ export default function Orders() {
                         {order.status.toUpperCase()}
                       </span>
                     </div>
+
+                    {order.status === 'pending' && (
+                      <div className="ord-pending-msg">
+                        🚚 Your product will be delivered within 24hrs from the time you ordered.
+                      </div>
+                    )}
 
                     <div className="ord-items">
                       {order.items.map(item => (
