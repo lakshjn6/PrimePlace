@@ -33,7 +33,7 @@ export default function Home() {
       {/* Hero */}
       <section style={s.hero}>
         <div style={s.heroGlow} />
-        <p style={s.heroEyebrow}>✦ The subscription marketplace</p>
+        <p style={s.heroEyebrow}>we are not longing to take order</p>
         <h1 style={{ ...s.heroTitle, fontSize: isMobile ? 28 : 68 }}>
           One place for all your{' '}
           <span style={s.accent}>digital subscriptions</span>
