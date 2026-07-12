@@ -36,7 +36,7 @@ export default function Login() {
     <div style={s.page}>
       <div style={s.card}>
         <div style={s.header}>
-          <span style={s.logo}>◈ SubFlow</span>
+          <span style={s.logo}>PrimeMarket</span>
           <h1 style={s.title}>Welcome back</h1>
           <p style={s.sub}>Sign in to your account</p>
         </div>
