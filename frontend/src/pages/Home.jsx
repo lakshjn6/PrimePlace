@@ -33,7 +33,22 @@ export default function Home() {
       {/* Hero */}
       <section style={s.hero}>
         <div style={s.heroGlow} />
-        <p style={s.heroEyebrow}>we are not longing to take order</p>
+      <p
+  style={{
+    ...s.heroEyebrow,
+    backgroundColor: "#dc2626",
+    color: "#fff",
+    fontWeight: "700",
+    display: "inline-block",
+    padding: "10px 18px",
+    borderRadius: "8px",
+    lineHeight: "1.5",
+  }}
+>
+  🚫 We are currently not accepting orders through the website. If you'd like
+  to place an order, please contact the seller directly via Telegram or the
+  PrimeMarket email. We'll be back soon!
+</p>
         <h1 style={{ ...s.heroTitle, fontSize: isMobile ? 28 : 68 }}>
           One place for all your{' '}
           <span style={s.accent}>digital subscriptions</span>
