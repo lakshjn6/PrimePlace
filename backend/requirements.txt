@@ -12,3 +12,4 @@ resend
 cloudinary
 django-cloudinary-storage
 pandas
+dj-database-url>=2.1.0

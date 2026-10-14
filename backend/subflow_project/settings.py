@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Read from environment variables (or use defaults for local dev)
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-this-in-production')
 DEBUG = config('DEBUG', default='True') == 'True'
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [h.strip() for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.railway.app').split(',') if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -96,17 +96,39 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'subflow_project.wsgi.application'
 
-# DATABASE - Read from environment
-DATABASES = {
-    'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': config('DB_NAME', default='subflow_db'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='12345'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+# DATABASE - Read from environment (DATABASE_URL from Railway/Supabase or discrete credentials)
+DATABASE_URL = config('DATABASE_URL', default=None)
+if DATABASE_URL:
+    try:
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+        }
+    except ImportError:
+        import urllib.parse as urlparse
+        url = urlparse.urlparse(DATABASE_URL)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': url.path[1:],
+                'USER': url.username,
+                'PASSWORD': url.password,
+                'HOST': url.hostname,
+                'PORT': url.port or 5432,
+            }
+        }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': config('DB_NAME', default='subflow_db'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default='12345'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
     }
-}
+
 
 AUTH_USER_MODEL = 'accounts.Account'
 
@@ -167,8 +189,8 @@ SIMPLE_JWT = {
 CSRF_TRUSTED_ORIGINS = [
     url.strip() for url in config(
         'CSRF_TRUSTED_ORIGINS',
-        default='http://localhost:3000'
-    ).split(',')
+        default='http://localhost:3000,https://*.railway.app'
+    ).split(',') if url.strip()
 ]
 
 # EMAIL
