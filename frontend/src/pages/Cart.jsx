@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useCurrency } from '../context/CurrencyContext';
 import toast from 'react-hot-toast';
 
 export default function Cart() {
   const { cart, fetchCart, updateItem, removeItem, loading } = useCart();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
@@ -132,7 +134,7 @@ export default function Cart() {
                       <span className="cart-qty">{item.quantity}</span>
                       <button className="cart-qty-btn" onClick={() => handleUpdate(item.id, item.quantity + 1)}>+</button>
                     </div>
-                    <div className="cart-item-price">₹{item.subtotal}</div>
+                    <div className="cart-item-price">{formatPrice(item.subtotal)}</div>
                     <button className="cart-remove-btn" onClick={() => handleRemove(item.id)}>✕</button>
                   </div>
                 </div>
@@ -144,16 +146,16 @@ export default function Cart() {
               <h2 className="cart-summary-title">Order Summary</h2>
               <div className="cart-summary-row">
                 <span>Items ({cart.count})</span>
-                <span>₹{cart.total}</span>
+                <span>{formatPrice(cart.total)}</span>
               </div>
               <div className="cart-summary-row">
                 <span style={{color:'#4caf50'}}>Discount</span>
-                <span style={{color:'#4caf50'}}>₹0</span>
+                <span style={{color:'#4caf50'}}>{formatPrice(0)}</span>
               </div>
               <div className="cart-divider" />
               <div className="cart-total-row">
                 <span>Total</span>
-                <span>₹{cart.total}</span>
+                <span>{formatPrice(cart.total)}</span>
               </div>
               <button className="cart-checkout-btn" onClick={() => navigate('/checkout')}>
                 Proceed to Checkout →

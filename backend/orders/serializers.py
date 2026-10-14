@@ -37,10 +37,18 @@ class CartSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name  = serializers.CharField(source='product.name', read_only=True)
     subtotal      = serializers.ReadOnlyField()
+    your_product  = serializers.SerializerMethodField()
 
     class Meta:
         model  = OrderItem
-        fields = ['id', 'product', 'product_name', 'quantity', 'price', 'subtotal']
+        fields = ['id', 'product', 'product_name', 'quantity', 'price', 'subtotal', 'your_product']
+
+    def get_your_product(self, obj):
+        request = self.context.get('request')
+        is_admin = bool(request and request.user and getattr(request.user, 'is_admin', False))
+        if (obj.order and obj.order.status == 'paid') or is_admin:
+            return obj.your_product or ''
+        return ''
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -56,11 +64,19 @@ class OrderSerializer(serializers.ModelSerializer):
     items   = OrderItemSerializer(many=True, read_only=True)
     payment = PaymentSerializer(read_only=True)
     user_email = serializers.CharField(source='user.email', read_only=True)
+    your_order = serializers.SerializerMethodField()
 
     class Meta:
         model  = Order
         fields = ['id', 'order_number', 'user_email', 'status',
-                  'total_amount', 'items', 'payment', 'created_at']
+                  'total_amount', 'your_order', 'items', 'payment', 'created_at']
+
+    def get_your_order(self, obj):
+        request = self.context.get('request')
+        is_admin = bool(request and request.user and getattr(request.user, 'is_admin', False))
+        if obj.status == 'paid' or is_admin:
+            return obj.your_order or ''
+        return ''
 
 
 class CheckoutSerializer(serializers.Serializer):

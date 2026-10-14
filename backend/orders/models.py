@@ -35,6 +35,8 @@ class Order(models.Model):
     status       = models.CharField(max_length=20, choices=STATUS_CHOICES,
                                     default='pending')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    your_order   = models.TextField(blank=True, default='', verbose_name="Your Order",
+                                    help_text="Order delivery details / message shown to the customer when order is Paid")
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
 
@@ -46,11 +48,13 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order    = models.ForeignKey(Order, on_delete=models.CASCADE,
-                                 related_name='items')
-    product  = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
-    quantity = models.PositiveIntegerField(default=1)
-    price    = models.DecimalField(max_digits=10, decimal_places=2 , null=True)  # snapshot
+    order        = models.ForeignKey(Order, on_delete=models.CASCADE,
+                                     related_name='items')
+    product      = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    quantity     = models.PositiveIntegerField(default=1)
+    price        = models.DecimalField(max_digits=10, decimal_places=2 , null=True)  # snapshot
+    your_product = models.TextField(blank=True, default='', verbose_name="Your Product",
+                                    help_text="Product credentials, license key, or details shown to the customer when order is Paid")
 
     def __str__(self):
         return f"{self.order.order_number} — {self.product}"

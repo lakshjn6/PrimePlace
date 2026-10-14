@@ -16,18 +16,29 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     category_slug = serializers.CharField(source='category.slug', read_only=True)
+    category_icon = serializers.CharField(source='category.icon', read_only=True)
     image_url     = serializers.SerializerMethodField() 
 
     class Meta:
         model  = Product
-        fields = ['id', 'category', 'category_name', 'category_slug',
+        fields = ['id', 'category', 'category_name', 'category_slug', 'category_icon',
                   'name', 'slug', 'description', 'features',
                   'price', 'billing_cycle', 'image_url', 'is_active',
                   'is_featured', 'created_at']
     
     def get_image_url(self, obj): 
         try:
-            return obj.image.url
+            if not obj.image:
+                return None
+            url = obj.image.url
+            if url.startswith('http://') or url.startswith('https://'):
+                return url
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(url)
+            from django.conf import settings
+            backend_url = getattr(settings, 'BACKEND_URL', 'http://127.0.0.1:8000')
+            return f"{backend_url.rstrip('/')}{url}"
         except Exception:
             return None
     

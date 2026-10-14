@@ -90,6 +90,7 @@ class CheckoutView(APIView):
 
         # Create payment record
         data = serializer.validated_data
+        screenshot = data.get('payment_screenshot')
         payment = Payment.objects.create(
             order=order,
             user=request.user,
@@ -98,10 +99,13 @@ class CheckoutView(APIView):
             transaction_ref=data['transaction_ref'],
             amount=total,
             payment_method=data.get('payment_method', 'bank_transfer'),
-            payment_screenshot=data.get('payment_screenshot'),
             notes=data.get('notes', ''),
-            status='pending',  # Auto-approve; in production admin would verify
+            status='pending',
         )
+
+        # Save screenshot separately so Django's storage backend (Cloudinary) processes it
+        if screenshot:
+            payment.payment_screenshot.save(screenshot.name, screenshot, save=True)
 
         # Mark order as paid
         order.status = 'pending'
@@ -121,10 +125,10 @@ class OrderListView(APIView):
 
     def get(self, request):
         if request.user.is_admin:
-            orders = Order.objects.all().select_related('user').prefetch_related('items', 'payment')
+            orders = Order.objects.all().select_related('user').prefetch_related('items__product', 'payment')
         else:
-            orders = Order.objects.filter(user=request.user).prefetch_related('items', 'payment')
-        return Response(OrderSerializer(orders, many=True).data)
+            orders = Order.objects.filter(user=request.user).prefetch_related('items__product', 'payment')
+        return Response(OrderSerializer(orders, many=True, context={'request': request}).data)
 
 
 class OrderDetailView(APIView):
@@ -135,4 +139,4 @@ class OrderDetailView(APIView):
             order = get_object_or_404(Order, order_number=order_number)
         else:
             order = get_object_or_404(Order, order_number=order_number, user=request.user)
-        return Response(OrderSerializer(order).data)
+        return Response(OrderSerializer(order, context={'request': request}).data)

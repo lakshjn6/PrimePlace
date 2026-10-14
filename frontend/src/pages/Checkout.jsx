@@ -2,23 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { ordersAPI } from '../api/client';
 import toast from 'react-hot-toast';
 
 // ── Currency Converter ─────────────────────────────────────────────────────────
 function UsdConverter({ inr }) {
-  const [usd, setUsd]         = useState(null);
-  const [rate, setRate]       = useState(null);
+  const [usd, setUsd] = useState(null);
+  const [rate, setRate] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
 
   const convert = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res  = await fetch('https://api.exchangerate-api.com/v4/latest/INR');
+      const res = await fetch('https://api.exchangerate-api.com/v4/latest/INR');
       const data = await res.json();
-      const r    = data.rates.USD;
+      const r = data.rates.USD;
       setRate(r);
       setUsd((parseFloat(inr) * r).toFixed(2));
     } catch {
@@ -34,8 +35,8 @@ function UsdConverter({ inr }) {
       borderRadius: 14, padding: '16px 20px',
       display: 'flex', flexDirection: 'column', gap: 10,
     }}>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
-        <span style={{ color:'#888', fontSize:13 }}>💱 Convert ₹{inr} to USD</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <span style={{ color: '#888', fontSize: 13 }}>💱 Convert ₹{inr} to USD</span>
         <button
           type="button"
           onClick={convert}
@@ -55,18 +56,18 @@ function UsdConverter({ inr }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: '#0e0e1e', borderRadius: 10, padding: '12px 16px',
         }}>
-          <span style={{ color:'#555', fontSize:13 }}>₹{inr} INR =</span>
-          <span style={{ color:'#7c5cfc', fontWeight:800, fontSize:22 }}>
-            ${usd} <span style={{ fontSize:13, color:'#555' }}>USD</span>
+          <span style={{ color: '#555', fontSize: 13 }}>₹{inr} INR =</span>
+          <span style={{ color: '#7c5cfc', fontWeight: 800, fontSize: 22 }}>
+            ${usd} <span style={{ fontSize: 13, color: '#555' }}>USD</span>
           </span>
         </div>
       )}
       {rate && (
-        <span style={{ color:'#444', fontSize:11, textAlign:'right' }}>
+        <span style={{ color: '#444', fontSize: 11, textAlign: 'right' }}>
           1 INR = {rate.toFixed(5)} USD · live rate
         </span>
       )}
-      {error && <span style={{ color:'#f5a623', fontSize:13 }}>{error}</span>}
+      {error && <span style={{ color: '#f5a623', fontSize: 13 }}>{error}</span>}
     </div>
   );
 }
@@ -74,18 +75,19 @@ function UsdConverter({ inr }) {
 // ── Main Checkout ──────────────────────────────────────────────────────────────
 export default function Checkout() {
   const { cart, fetchCart, clearCart } = useCart();
-  const { user }                       = useAuth();
-  const navigate                       = useNavigate();
-  const [step, setStep]                = useState(1);
-  const [order, setOrder]              = useState(null);
-  const [loading, setLoading]          = useState(false);
-  const [form, setForm]                = useState({
-    payer_name:         user ? `${user.first_name} ${user.last_name}` : '',
-    payer_email:        user?.email || '',
-    transaction_ref:    '',
-    payment_method:     'upi',
+  const { user } = useAuth();
+  const { formatPrice, rate } = useCurrency();
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    payer_name: user ? `${user.first_name} ${user.last_name}` : '',
+    payer_email: user?.email || '',
+    transaction_ref: '',
+    payment_method: 'upi',
     payment_screenshot: null,
-    notes:              '',
+    notes: '',
   });
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
@@ -102,11 +104,11 @@ export default function Checkout() {
     setLoading(true);
     try {
       const fd = new FormData();
-      fd.append('payer_name',      form.payer_name);
-      fd.append('payer_email',     form.payer_email);
+      fd.append('payer_name', form.payer_name);
+      fd.append('payer_email', form.payer_email);
       fd.append('transaction_ref', form.transaction_ref);
-      fd.append('payment_method',  form.payment_method);
-      fd.append('notes',           form.notes || '');
+      fd.append('payment_method', form.payment_method);
+      fd.append('notes', form.notes || '');
       if (form.payment_screenshot instanceof File) {
         fd.append('payment_screenshot', form.payment_screenshot);
       }
@@ -117,8 +119,8 @@ export default function Checkout() {
       setStep(3);
     } catch (err) {
       const errs = err.response?.data;
-      const msg  = typeof errs === 'object'
-        ? Object.entries(errs).map(([k,v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ')
+      const msg = typeof errs === 'object'
+        ? Object.entries(errs).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ')
         : String(errs);
       toast.error(msg || 'Something went wrong');
     } finally {
@@ -254,10 +256,10 @@ export default function Checkout() {
           <div className="co-steps">
             {['Review', 'Payment', 'Confirmed'].map((label, i) => (
               <div key={label} className="co-step-item">
-                <div className={`co-step-circle ${step > i+1 ? 'co-step-done' : step === i+1 ? 'co-step-active' : ''}`}>
-                  {step > i+1 ? '✓' : i+1}
+                <div className={`co-step-circle ${step > i + 1 ? 'co-step-done' : step === i + 1 ? 'co-step-active' : ''}`}>
+                  {step > i + 1 ? '✓' : i + 1}
                 </div>
-                <span className={`co-step-label ${step === i+1 ? 'active' : ''}`}>{label}</span>
+                <span className={`co-step-label ${step === i + 1 ? 'active' : ''}`}>{label}</span>
               </div>
             ))}
           </div>
@@ -275,7 +277,7 @@ export default function Checkout() {
                         <div className="co-order-name">{item.product.name}</div>
                         <div className="co-order-cat">{item.product.category_name} · {item.product.billing_cycle}</div>
                       </div>
-                      <div className="co-order-price">₹{item.subtotal}</div>
+                      <div className="co-order-price">{formatPrice(item.subtotal)}</div>
                     </div>
                   ))}
                   <button className="co-next-btn" onClick={() => setStep(2)}>
@@ -289,28 +291,27 @@ export default function Checkout() {
                 <form onSubmit={handleSubmit} className="co-card">
                   <h2 className="co-card-title">Payment Details</h2>
 
-                  {/* ── UPI ── */}
+                  {/* ── UPI (Always in Indian Rs) ── */}
                   <div className="co-bank-info">
                     <h3 className="co-bank-title">📤 Pay via UPI</h3>
                     <img
-                      src={require('../images/upi1.png')}
+                      src={require('../images/upi_pay.png')}
                       alt="UPI QR"
                       className="co-qr-img"
                     />
                     <div className="co-bank-row">
-                      <span>UPI Id:</span><strong>jaintech@fam</strong>
+                      <span>UPI Id:</span><strong>Jainutkarsh@fam</strong>
                     </div>
                     <div className="co-bank-row">
                       <span>Amount:</span>
-                      <strong style={{ color:'#7c5cfc' }}>₹{cart.total}</strong>
+                      <strong style={{ color: '#7c5cfc' }}>₹{cart.total}</strong>
                     </div>
-                    {/* ✅ FIXED: <a tag was missing opening bracket */}
                     <a
-                      href={`upi://pay?pa=jaintech@fam&pn=Akshat&am=${cart.total}&tn=PrimeMarketPurchase`}
+                      href={`upi://pay?pa=Jainutkarsh@fam&pn=PrimeMarket&am=${cart.total}&tn=PrimeMarket`}
                       className="co-upi-btn"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 5v14M5 12l7 7 7-7"/>
+                        <path d="M12 5v14M5 12l7 7 7-7" />
                       </svg>
                       Tap to Pay ₹{cart.total} via UPI
                     </a>
@@ -319,10 +320,9 @@ export default function Checkout() {
                     </p>
                   </div>
 
-                  {/* ── INR → USD Converter ── */}
-                  <UsdConverter inr={cart.total} />
 
-                  {/* ── Binance ── */}
+
+                  {/* ── Binance (Shows in Dollars) ── */}
                   <div className="co-bank-info">
                     <h3 className="co-bank-title">📤 Pay via Binance</h3>
                     <img
@@ -334,13 +334,16 @@ export default function Checkout() {
                       <span>Binance ID:</span><strong>1252939506</strong>
                     </div>
                     <div className="co-bank-row">
-                      <span>Amount:</span>
-                      <strong style={{ color:'#7c5cfc' }}>₹{cart.total}</strong>
+                      <span>Amount (USD / USDT):</span>
+                      <strong style={{ color: '#7c5cfc' }}>${(parseFloat(cart.total || 0) * (rate || 0.0116)).toFixed(2)} USD</strong>
+                    </div>
+                    <div className="co-bank-row" style={{ fontSize: 12, color: '#777' }}>
+                      <span>INR Equivalent:</span><span>₹{cart.total}</span>
                     </div>
                   </div>
 
                   {/* ── Bank Transfer ── */}
-                  <div className="co-bank-info">
+                  {/* <div className="co-bank-info">
                     <h3 className="co-bank-title">🏦 Bank Transfer</h3>
                     <div className="co-bank-row"><span>Account Name:</span><strong>UTKARSH JAIN</strong></div>
                     <div className="co-bank-row"><span>Account Number:</span><strong>5010 6081 8564</strong></div>
@@ -348,12 +351,12 @@ export default function Checkout() {
                     <div className="co-bank-row"><span>Branch:</span><strong>one international centre, prabhadevi</strong></div>
                     <div className="co-bank-row">
                       <span>Amount:</span>
-                      <strong style={{ color:'#7c5cfc' }}>₹{cart.total}</strong>
+                      <strong style={{ color: '#7c5cfc' }}>₹{cart.total}</strong>
                     </div>
                     <p className="co-bank-note">
                       ⚠️ After transferring, fill the form below with your transaction details.
                     </p>
-                  </div>
+                  </div> */}
 
                   {/* ── Form fields ── */}
                   <div className="co-field">
@@ -380,7 +383,7 @@ export default function Checkout() {
                     <label className="co-label">Payment Screenshot (optional but recommended)</label>
                     <input
                       className="co-input"
-                      style={{ padding:'10px 14px' }}
+                      style={{ padding: '10px 14px' }}
                       type="file"
                       name="payment_screenshot"
                       accept="image/*"
@@ -398,7 +401,7 @@ export default function Checkout() {
                     <label className="co-label">Notes (optional)</label>
                     <textarea
                       className="co-input"
-                      style={{ height:80, resize:'vertical' }}
+                      style={{ height: 80, resize: 'vertical' }}
                       name="notes"
                       value={form.notes}
                       onChange={handleChange}
@@ -421,16 +424,16 @@ export default function Checkout() {
               <h3 className="co-summary-title">Order Total</h3>
               {cart.items.map(item => (
                 <div key={item.id} className="co-summary-item">
-                  <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'160px' }}>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
                     {item.product.name}
                   </span>
-                  <span>₹{item.subtotal}</span>
+                  <span>{formatPrice(item.subtotal)}</span>
                 </div>
               ))}
               <div className="co-divider" />
               <div className="co-summary-total">
                 <span>Total</span>
-                <span>₹{cart.total}</span>
+                <span>{formatPrice(cart.total)}</span>
               </div>
             </div>
 
@@ -443,6 +446,7 @@ export default function Checkout() {
 
 // ── Success Screen ─────────────────────────────────────────────────────────────
 function SuccessScreen({ order, navigate }) {
+  const { formatPrice } = useCurrency();
   return (
     <>
       <style>{`
@@ -477,13 +481,13 @@ function SuccessScreen({ order, navigate }) {
       <div className="co-success-page">
         <div className="co-success-card">
           <div className="co-success-icon">✓</div>
-          <h1 className="co-success-title">Payment Received!</h1>
-          <p className="co-success-sub">Your order has been placed successfully.</p>
-          <div style={{ color:'#aaa', fontSize:15, marginBottom:8 }}>
-            Order: <strong style={{ color:'#fff' }}>{order.order_number}</strong>
+          <h1 className="co-success-title">Thank You for Your Order!</h1>
+          <p className="co-success-sub">Your order has been submitted successfully.</p>
+          <div style={{ color: '#aaa', fontSize: 15, marginBottom: 8 }}>
+            Order: <strong style={{ color: '#fff' }}>{order.order_number}</strong>
           </div>
-          <div style={{ color:'#fff', fontSize:18, fontWeight:700, marginBottom:16 }}>
-            Total: <strong style={{ color:'#7c5cfc' }}>₹{order.total_amount}</strong>
+          <div style={{ color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 16 }}>
+            Total: <strong style={{ color: '#7c5cfc' }}>{formatPrice(order.total_amount)}</strong>
           </div>
           <p className="co-success-note">
             We'll verify your payment and activate your subscriptions within 24 hours.

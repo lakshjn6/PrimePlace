@@ -2,12 +2,16 @@
 backend/.env
 backend/.env.local
 backend/venv/
-backend/__pycache__/
 backend/db.sqlite3
 backend/media/
 backend/staticfiles/
-backend/*.pyc
 backend/*.log
+
+# Python bytecode & cache
+**/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Frontend secrets
 frontend/.env
@@ -25,3 +29,6 @@ frontend/npm-debug.log
 
 # OS
 Thumbs.db
+
+.env
+.env.production

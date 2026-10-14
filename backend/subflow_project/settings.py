@@ -7,7 +7,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 def config(key, default=None):
     return os.getenv(key, default)
@@ -38,13 +38,31 @@ INSTALLED_APPS = [
     'cloudinary',
     'reviews', 
 ]
+CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
+CLOUDINARY_API_KEY    = config('CLOUDINARY_API_KEY', default='')
+CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+USE_CLOUDINARY        = config('USE_CLOUDINARY', default='False') == 'True'
+
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY':    config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+    'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
+    'API_KEY':    CLOUDINARY_API_KEY,
+    'API_SECRET': CLOUDINARY_API_SECRET,
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Only use Cloudinary if USE_CLOUDINARY=True and valid credentials are provided
+if USE_CLOUDINARY and CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY:
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    import cloudinary
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True,
+    )
+else:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+BACKEND_URL = config('BACKEND_URL', default='http://127.0.0.1:8000')
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -109,13 +127,16 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(MEDIA_ROOT / 'products', exist_ok=True)
+os.makedirs(MEDIA_ROOT / 'payments', exist_ok=True)
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS
-# ✅ CORRECT - Removes spaces!
+# âœ… CORRECT - Removes spaces!
 CORS_ALLOWED_ORIGINS = [
     url.strip() for url in config(
         'CORS_ALLOWED_ORIGINS',

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { storeAPI } from '../api/client';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import toast from 'react-hot-toast';
 
 export default function ProductDetail() {
@@ -10,6 +11,7 @@ export default function ProductDetail() {
   const navigate      = useNavigate();
   const { addToCart } = useCart();
   const { user }      = useAuth();
+  const { formatPrice } = useCurrency();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -247,7 +249,7 @@ export default function ProductDetail() {
                 <div className="pd-card-body">
                   <div className="pd-pricing-top">
                     <div className="pd-price-row">
-                      <span className="pd-price">₹{product.price}</span>
+                      <span className="pd-price">{formatPrice(product.price)}</span>
                       <span className="pd-cycle">/{product.billing_cycle}</span>
                     </div>
                     <p className="pd-pricing-desc">Valid for {product.billing_cycle}</p>

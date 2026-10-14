@@ -6,10 +6,12 @@ import ScrollToTop from './components/Scrolltotop';
 
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import Footer from './pages/Footer1';
 
 import Navbar         from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import CurrencyToggle from './components/CurrencyToggle';
 
 import Home          from './pages/Home';
 import Register      from './pages/Register';
@@ -32,8 +34,9 @@ export default function App() {
     <ScrollToTop />
       <AuthProvider>
         <CartProvider>
-          <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
-            <Navbar />
+          <CurrencyProvider>
+            <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+              <Navbar />
             <Routes>
               <Route path="/"              element={<Home />} />
               <Route path="/register"      element={<Register />} />
@@ -65,6 +68,7 @@ export default function App() {
               } />
             </Routes>
             <Footer />
+            <CurrencyToggle />
             <Toaster
               position="top-right"
               toastOptions={{
@@ -73,6 +77,7 @@ export default function App() {
               }}
             />
           </div>
+          </CurrencyProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { storeAPI } from '../api/client';
-import { useAuth } from '../context/AuthContext';   // ← ADDED
+import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import ReviewSection from '../components/ReviewSection'; 
+import DiwaliEffects from '../components/DiwaliEffects';
 
 export default function Home() {
   const { user } = useAuth();                        // ← ADDED
@@ -30,26 +32,39 @@ export default function Home() {
   return (
     <div style={s.page}>
 
-      {/* Hero */}
+      {/* Hero with Diwali Festive Effects */}
       <section style={s.hero}>
         <div style={s.heroGlow} />
-     <p style={s.heroEyebrow}>PrimeMarket</p>
-        <h1 style={{ ...s.heroTitle, fontSize: isMobile ? 28 : 68 }}>
-          One place for all your{' '}
-          <span style={s.accent}>digital subscriptions</span>
-        </h1>
-        <p style={{ ...s.heroSub, fontSize: isMobile ? 14 : 18 }}>
-          Stream, create, learn — find every subscription plan at the best price.
-          Cancel anytime, no hidden fees.
-        </p>
-        <div style={{ ...s.heroCtas, flexDirection: isMobile ? 'column' : 'row' }}>
-          <Link to="/products" style={s.ctaPrimary}>Browse All Plans</Link>
-          {!user && (
-            <Link to="/register" style={s.ctaSecondary}>Create Account →</Link>
-          )}
-          {user && (
-            <Link to="/profile" style={s.ctaSecondary}>My Account →</Link>
-          )}
+
+        {/* Diwali Animations: Sparklers, Rockets, Bombs, Lights & Diyas */}
+        <DiwaliEffects isMobile={isMobile} />
+
+        <div style={{ position: 'relative', zIndex: 5 }}>
+          <div className="diwali-festive-badge">
+            <span>🪔</span> Shubh Deepavali • Festive Offers <span>✨</span>
+          </div>
+
+          <div className="diwali-hero-title-box">
+            <h1 style={{ ...s.heroTitle, fontSize: isMobile ? 28 : 68 }}>
+              One place for all your{' '}
+              <span className="diwali-accent-gold" style={s.accent}>digital subscriptions</span>
+            </h1>
+          </div>
+
+          <p style={{ ...s.heroSub, fontSize: isMobile ? 14 : 18 }}>
+            Stream, create, learn — find every subscription plan at the best price.
+            Cancel anytime, no hidden fees.
+          </p>
+
+          <div style={{ ...s.heroCtas, flexDirection: isMobile ? 'column' : 'row' }}>
+            <Link to="/products" style={s.ctaPrimary}>Browse All Plans</Link>
+            {!user && (
+              <Link to="/register" style={s.ctaSecondary}>Create Account →</Link>
+            )}
+            {user && (
+              <Link to="/profile" style={s.ctaSecondary}>My Account →</Link>
+            )}
+          </div>
         </div>
       </section>
 
@@ -122,19 +137,40 @@ export default function Home() {
   );
 }
 
+// Gradient palettes cycling per product id
+const GRADIENTS = [
+  'linear-gradient(135deg, #1a0533 0%, #3b1278 50%, #7c5cfc 100%)',
+  'linear-gradient(135deg, #0a2a1a 0%, #0d5c3a 50%, #00c97a 100%)',
+  'linear-gradient(135deg, #1a0a00 0%, #6b2c00 50%, #ff7c20 100%)',
+  'linear-gradient(135deg, #001a2e 0%, #003d6b 50%, #0099ff 100%)',
+  'linear-gradient(135deg, #1a001a 0%, #6b006b 50%, #e040fb 100%)',
+  'linear-gradient(135deg, #1a1a00 0%, #5c5a00 50%, #d4c400 100%)',
+];
+
 function ProductCard({ product }) {
+  const { formatPrice } = useCurrency();
+  const [imgError, setImgError] = React.useState(false);
+  const gradient = GRADIENTS[(product.id || 0) % GRADIENTS.length];
+
   return (
     <Link to={`/products/${product.slug}`} style={s.prodCard}>
-      {product.image_url && (
-        <div style={s.imgWrapper}>
+      {/* Image area — always visible */}
+      <div style={s.prodImgWrapper}>
+        {product.image_url && !imgError ? (
           <img
             src={product.image_url}
             alt={product.name}
-            style={s.img}
-            onError={(e) => { e.target.style.display = 'none'; }}
+            style={s.prodImg}
+            onError={() => setImgError(true)}
           />
-        </div>
-      )}
+        ) : (
+          <div style={{ ...s.prodImgPlaceholder, background: gradient }}>
+            <span style={s.prodPlaceholderIcon}>
+              {product.category_icon || '📦'}
+            </span>
+          </div>
+        )}
+      </div>
       <div style={s.prodCatBadge}>{product.category_name}</div>
       <h3 style={s.prodName}>{product.name}</h3>
       <p style={s.prodDesc}>
@@ -143,7 +179,7 @@ function ProductCard({ product }) {
           : product.description}
       </p>
       <div style={s.prodFooter}>
-        <span style={s.prodPrice}>₹{product.price}</span>
+        <span style={s.prodPrice}>{formatPrice(product.price)}</span>
         <span style={s.prodCycle}>/{product.billing_cycle}</span>
       </div>
     </Link>
@@ -152,8 +188,8 @@ function ProductCard({ product }) {
 
 const s = {
   page: { background: '#060608', minHeight: '100vh', color: '#fff', overflowX: 'hidden', width: '100%', boxSizing: 'border-box' },
-  hero: { maxWidth: 860, margin: '0 auto', padding: '72px 20px 56px', textAlign: 'center', position: 'relative', boxSizing: 'border-box', width: '100%' },
-  heroGlow: { position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 500, height: 360, background: 'radial-gradient(ellipse, rgba(124,92,252,0.15) 0%, transparent 70%)', pointerEvents: 'none' },
+  hero: { maxWidth: 920, margin: '0 auto', padding: '64px 20px 60px', textAlign: 'center', position: 'relative', boxSizing: 'border-box', width: '100%', overflow: 'visible' },
+  heroGlow: { position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 650, height: 420, background: 'radial-gradient(ellipse, rgba(245,158,11,0.12) 0%, rgba(124,92,252,0.1) 40%, transparent 70%)', pointerEvents: 'none' },
   heroEyebrow: { color: '#7c5cfc', fontSize: 12, fontWeight: 600, letterSpacing: 2, marginBottom: 14 },
   heroTitle: { fontWeight: 900, lineHeight: 1.15, marginBottom: 18, fontFamily: 'Georgia, serif' },
   accent: { color: '#7c5cfc', fontStyle: 'italic' },
@@ -171,24 +207,19 @@ const s = {
   catName: { color: '#fff', fontWeight: 600, fontSize: 13 },
   catCount: { color: '#666', fontSize: 11 },
   prodGrid: { display: 'grid', gap: 14 },
-  prodCard: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: 18, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10 },
-  prodCatBadge: { background: 'rgba(124,92,252,0.15)', color: '#7c5cfc', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, width: 'fit-content', letterSpacing: 1 },
-  prodName: { color: '#fff', fontWeight: 700, fontSize: 16, margin: 0 },
-  prodDesc: { color: '#666', fontSize: 13, lineHeight: 1.6, margin: 0 },
-  prodFooter: { display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 'auto' },
+  prodCard: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden' },
+  prodImgWrapper: { width: '100%', height: 160, overflow: 'hidden', background: '#111', flexShrink: 0 },
+  prodImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+  prodImgPlaceholder: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  prodPlaceholderIcon: { fontSize: 44, filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))' },
+  prodCatBadge: { background: 'rgba(124,92,252,0.15)', color: '#7c5cfc', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, width: 'fit-content', letterSpacing: 1, margin: '14px 14px 0' },
+  prodName: { color: '#fff', fontWeight: 700, fontSize: 16, margin: '6px 14px 0' },
+  prodDesc: { color: '#666', fontSize: 13, lineHeight: 1.6, margin: '6px 14px 0', flexGrow: 1 },
+  prodFooter: { display: 'flex', alignItems: 'baseline', gap: 4, margin: '10px 14px 14px' },
   prodPrice: { color: '#7c5cfc', fontWeight: 800, fontSize: 22 },
   prodCycle: { color: '#555', fontSize: 12 },
   statsRow: { maxWidth: 1200, margin: '0 auto', display: 'grid', gap: 10, boxSizing: 'border-box', width: '100%' },
   statBox: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: '20px 12px', textAlign: 'center' },
   statNum: { fontWeight: 900, color: '#7c5cfc', fontFamily: 'Georgia, serif' },
   statLabel: { color: '#666', fontSize: 12, marginTop: 6 },
-   imgWrapper: {
-  width: '100%', height: 160, borderRadius: 12,
-  overflow: 'hidden', marginBottom: 4,
-  background: '#111',
-},
-img: {
-  width: '100%', height: '100%',
-  objectFit: 'cover', display: 'block',
-},
 };
