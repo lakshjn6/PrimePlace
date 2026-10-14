@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 def config(key, default=None):
     return os.getenv(key, default)
 
