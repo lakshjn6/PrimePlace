@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../api/client';
 import toast from 'react-hot-toast';
 
-function Field({ name, label, type = 'text', placeholder, value, onChange, error }) {
+function Field({ name, label, type = 'text', placeholder, value, onChange, error, required = true }) {
   return (
     <div className="pm-field">
       <label className="pm-label">{label}</label>
@@ -15,7 +15,7 @@ function Field({ name, label, type = 'text', placeholder, value, onChange, error
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        required
+        required={required}
       />
       {error && (
         <p className="pm-err-msg">
@@ -144,8 +144,8 @@ export default function Register() {
             <div className="pm-row">
               <Field name="username"     label="Username"     placeholder="johndoe"
                 value={form.username}     onChange={handleChange} error={errors.username} />
-              <Field name="phone_number" label="Phone Number" placeholder="+91 9876543210"
-                value={form.phone_number} onChange={handleChange} error={errors.phone_number} />
+              <Field name="phone_number" label="Phone Number (optional)" placeholder="+91 9876543210"
+                value={form.phone_number} onChange={handleChange} error={errors.phone_number} required={false} />
             </div>
 
             <Field name="email"     label="Email Address"   type="email"
