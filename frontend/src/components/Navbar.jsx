@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import SearchBar from './SearchBar';
 
 export default function Navbar() {
   const { user, logout }        = useAuth();
@@ -12,7 +13,7 @@ export default function Navbar() {
   const [mobileOpen, setMobile] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Close mobile menu on route change
+  // Close menus on route change
   useEffect(() => { setMobile(false); setMenu(false); }, [location]);
 
   // Track screen width
@@ -29,29 +30,40 @@ export default function Navbar() {
 
   return (
     <>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeSlideDown {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .nb-search-desktop:focus-within .nb-search-input-wrap {
+          border-color: #7c5cfc !important;
+          box-shadow: 0 0 0 3px rgba(124,92,252,0.15);
+        }
+        .nb-viewall-row:hover { background: rgba(124,92,252,0.1) !important; }
+      `}</style>
+
       <nav style={s.nav}>
         <div style={s.inner}>
 
           {/* Logo */}
-          
           <Link to="/" style={s.logo}>
-  <img
-    src={require('../images/logo.png')}
-    alt="PrimeMarket Logo"
-    style={{
-      height: "60px",
-      width: "auto",
-      objectFit: "contain",
-    }}
-  />
- 
-</Link>
+            <img
+              src={require('../images/logo.png')}
+              alt="PrimeMarket Logo"
+              style={{ height: '60px', width: 'auto', objectFit: 'contain' }}
+            />
+          </Link>
 
-          {/* Desktop center links */}
+          {/* ── Desktop center: nav links + search bar ── */}
           {!isMobile && (
-            <div style={s.links}>
+            <div style={s.centerDesktop}>
               <Link to="/"         style={s.link}>Home</Link>
               <Link to="/products" style={s.link}>Plans</Link>
+              {/* Inline search */}
+              <div className="nb-search-desktop" style={s.searchDesktop}>
+                <SearchBar />
+              </div>
             </div>
           )}
 
@@ -87,7 +99,7 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Mobile right — cart + hamburger */}
+          {/* Mobile right — cart + hamburger (no search icon, search is always below) */}
           {isMobile && (
             <div style={s.mobileRight}>
               {user && (
@@ -96,7 +108,7 @@ export default function Navbar() {
                   {cart.count > 0 && <span style={s.badge}>{cart.count}</span>}
                 </Link>
               )}
-              {/* Hamburger button */}
+              {/* Hamburger */}
               <button style={s.hamburger} onClick={() => setMobile(!mobileOpen)}>
                 <span style={{ ...s.bar, ...(mobileOpen ? s.bar1Open : {}) }} />
                 <span style={{ ...s.bar, ...(mobileOpen ? s.bar2Open : {}) }} />
@@ -106,6 +118,13 @@ export default function Navbar() {
           )}
 
         </div>
+
+        {/* ── Mobile Search Row — always visible, like Amazon ── */}
+        {isMobile && (
+          <div style={s.mobileSearchRow}>
+            <SearchBar />
+          </div>
+        )}
 
         {/* Mobile dropdown menu */}
         {isMobile && mobileOpen && (
@@ -154,16 +173,17 @@ export default function Navbar() {
 const s = {
   // ── Desktop nav ─────────────────────────────────────
   nav:       { background:'#0a0a0a', borderBottom:'1px solid #1e1e1e', position:'sticky', top:0, zIndex:100 },
-  inner:     { maxWidth:1200, margin:'0 auto', padding:'0 24px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between' },
-  logo:      { display:'flex', alignItems:'center', gap:10, textDecoration:'none' },
-  logoIcon:  { fontSize:24, color:'#7c5cfc' },
-  logoText:  { fontSize:22, fontWeight:800, color:'#fff', fontFamily:'Georgia, serif', letterSpacing:'-0.5px' },
-  links:     { display:'flex', gap:32 },
-  link:      { color:'#aaa', textDecoration:'none', fontSize:14, fontWeight:500 },
-  right:     { display:'flex', alignItems:'center', gap:20 },
-  cartBtn:   { position:'relative', color:'#aaa', textDecoration:'none', fontSize:20 },
+  inner:     { maxWidth:1200, margin:'0 auto', padding:'0 24px', height:64, display:'flex', alignItems:'center', justifyContent:'space-between', gap:16 },
+  logo:      { display:'flex', alignItems:'center', gap:10, textDecoration:'none', flexShrink:0 },
+
+  centerDesktop: { display:'flex', alignItems:'center', gap:28, flex:1, justifyContent:'center', minWidth:0 },
+  searchDesktop: { flex:1, maxWidth:420, minWidth:0 },
+
+  link:      { color:'#aaa', textDecoration:'none', fontSize:14, fontWeight:500, whiteSpace:'nowrap' },
+  right:     { display:'flex', alignItems:'center', gap:20, flexShrink:0 },
+  cartBtn:   { position:'relative', color:'#aaa', textDecoration:'none', fontSize:20, flexShrink:0 },
   badge:     { position:'absolute', top:-8, right:-8, background:'#7c5cfc', color:'#fff', fontSize:10, fontWeight:700, width:18, height:18, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center' },
-  cta:       { background:'#7c5cfc', color:'#fff', textDecoration:'none', padding:'8px 18px', borderRadius:8, fontSize:14, fontWeight:600 },
+  cta:       { background:'#7c5cfc', color:'#fff', textDecoration:'none', padding:'8px 18px', borderRadius:8, fontSize:14, fontWeight:600, whiteSpace:'nowrap' },
   userMenu:  { position:'relative', cursor:'pointer' },
   avatar:    { width:36, height:36, borderRadius:'50%', background:'#7c5cfc', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:15 },
   dropdown:  { position:'absolute', right:0, top:44, background:'#111', border:'1px solid #2a2a2a', borderRadius:12, padding:16, minWidth:200, boxShadow:'0 20px 60px rgba(0,0,0,0.5)', zIndex:200 },
@@ -172,15 +192,21 @@ const s = {
   dropItem:  { display:'block', color:'#aaa', textDecoration:'none', padding:'6px 0', fontSize:14 },
   dropLogout:{ display:'block', width:'100%', textAlign:'left', background:'none', border:'none', color:'#ff4d4d', fontSize:14, cursor:'pointer', padding:'6px 0' },
 
-  // ── Hamburger button ────────────────────────────────
-  mobileRight:{ display:'flex', alignItems:'center', gap:16 },
+  // ── Mobile ───────────────────────────────────────────
+  mobileRight:{ display:'flex', alignItems:'center', gap:12 },
   hamburger: { background:'none', border:'none', cursor:'pointer', padding:8, display:'flex', flexDirection:'column', gap:5, zIndex:101 },
   bar:       { display:'block', width:24, height:2, background:'#fff', borderRadius:2, transition:'all 0.3s ease' },
   bar1Open:  { transform:'translateY(7px) rotate(45deg)' },
   bar2Open:  { opacity:0 },
   bar3Open:  { transform:'translateY(-7px) rotate(-45deg)' },
 
-  // ── Mobile dropdown menu ────────────────────────────
+  // Permanent search row below the logo bar (Amazon-style)
+  mobileSearchRow: {
+    padding: '8px 14px 10px',
+    borderTop: '1px solid #1a1a1a',
+    background: '#0a0a0a',
+  },
+
   mobileMenu:   { background:'#0e0e12', borderTop:'1px solid #1e1e2e', padding:'16px 24px 24px', display:'flex', flexDirection:'column', gap:4 },
   mobileLink:   { color:'#ccc', textDecoration:'none', fontSize:16, fontWeight:500, padding:'12px 16px', borderRadius:10, display:'block' },
   mobileDivider:{ borderTop:'1px solid #1e1e2e', margin:'8px 0' },
@@ -191,6 +217,6 @@ const s = {
   mobileLogout: { background:'rgba(255,77,77,0.1)', border:'1px solid rgba(255,77,77,0.2)', color:'#ff4d4d', borderRadius:10, padding:'12px 16px', fontSize:15, fontWeight:600, cursor:'pointer', textAlign:'left', marginTop:8 },
   mobileCta:    { background:'#7c5cfc', color:'#fff', textDecoration:'none', padding:'13px 16px', borderRadius:10, fontSize:15, fontWeight:700, textAlign:'center', marginTop:8 },
 
-  // ── Overlay ─────────────────────────────────────────
-  overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:99, top:64 },
+  // top: 64 (logo row) + 50 (search row) = 114
+  overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:99, top:114 },
 };

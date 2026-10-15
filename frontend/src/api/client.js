@@ -23,6 +23,7 @@ export const storeAPI = {
   getProducts:     (params) => API.get('/store/products/', { params }),
   getProductBySlug:(slug)   => API.get(`/store/products/${slug}/`),
   getProduct:      (slug)   => API.get(`/store/products/${slug}/`),  // alias used in ProductDetail
+  searchProducts:  (q)      => API.get('/store/search/', { params: { q } }),
 };
 
 // Cart
