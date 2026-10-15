@@ -22,8 +22,10 @@ export default function Cart() {
   };
 
   if (loading) return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-                  height:'60vh', color:'#555', background:'#060608' }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      height: '60vh', color: '#555', background: '#060608'
+    }}>
       Loading cart...
     </div>
   );
@@ -31,12 +33,14 @@ export default function Cart() {
   if (cart.items.length === 0) return (
     <>
       <style>{`.cart-empty-btn{background:#7c5cfc;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;margin-top:12px;}`}</style>
-      <div style={{ display:'flex', flexDirection:'column', alignItems:'center',
-                    justifyContent:'center', height:'70vh', gap:12,
-                    textAlign:'center', background:'#060608', color:'#fff' }}>
-        <p style={{fontSize:64, margin:0}}>🛒</p>
-        <h2 style={{fontFamily:'Georgia,serif', margin:0}}>Your cart is empty</h2>
-        <p style={{color:'#555'}}>Browse our plans and add some to your cart</p>
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', height: '70vh', gap: 12,
+        textAlign: 'center', background: '#060608', color: '#fff'
+      }}>
+        <p style={{ fontSize: 64, margin: 0 }}>🛒</p>
+        <h2 style={{ fontFamily: 'Georgia,serif', margin: 0 }}>Your cart is empty</h2>
+        <p style={{ color: '#555' }}>Browse our plans and add some to your cart</p>
         <Link to="/products" className="cart-empty-btn">Browse Plans</Link>
       </div>
     </>
@@ -62,7 +66,7 @@ export default function Cart() {
         .cart-item {
           background:#0e0e12; border:1px solid #1e1e2e;
           border-radius:16px; padding:20px 24px;
-          display:flex; justify-content:space-between;
+          justify-content:space-between;
           align-items:center; gap:16px;
         }
         .cart-item-info { flex:1; min-width:0; }
@@ -149,8 +153,8 @@ export default function Cart() {
                 <span>{formatPrice(cart.total)}</span>
               </div>
               <div className="cart-summary-row">
-                <span style={{color:'#4caf50'}}>Discount</span>
-                <span style={{color:'#4caf50'}}>{formatPrice(0)}</span>
+                <span style={{ color: '#4caf50' }}>Discount</span>
+                <span style={{ color: '#4caf50' }}>{formatPrice(0)}</span>
               </div>
               <div className="cart-divider" />
               <div className="cart-total-row">
