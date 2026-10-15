@@ -324,14 +324,29 @@ export default function Checkout() {
 
                   {/* ── Binance (Shows in Dollars) ── */}
                   <div className="co-bank-info">
+                    <h3 className="co-bank-title">📤 Pay via USDT (BEP 20) </h3>
+                    <div className="co-bank-row">
+                      <span>Wallet Address:</span><strong>0x8f5a4e4c1c6bc94ae08ca67d7a328935b189e43e</strong>
+                    </div>
+                    <div className="co-bank-row">
+                      <span>Amount (USD / USDT):</span>
+                      <strong style={{ color: '#7c5cfc' }}>${(parseFloat(cart.total || 0) * (rate || 0.0116)).toFixed(2)} USD</strong>
+                    </div>
+                    <div className="co-bank-row" style={{ fontSize: 12, color: '#777' }}>
+                      <span>INR Equivalent:</span><span>₹{cart.total}</span>
+                    </div>
+                  </div>
+
+
+                  <div className="co-bank-info">
                     <h3 className="co-bank-title">📤 Pay via Binance</h3>
                     <img
-                      src={require('../images/binance.png')}
+                      src={require('../images/Final_Binance.png')}
                       alt="Binance QR"
                       className="co-qr-img"
                     />
                     <div className="co-bank-row">
-                      <span>Binance ID:</span><strong>1252939506</strong>
+                      <span>Binance ID:</span><strong>1286924779</strong>
                     </div>
                     <div className="co-bank-row">
                       <span>Amount (USD / USDT):</span>
