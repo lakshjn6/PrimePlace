@@ -14,7 +14,7 @@ class CategoryListView(APIView):
 
     def get(self, request):
         categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
+        serializer = CategorySerializer(categories, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):

@@ -7,7 +7,9 @@ class Category(models.Model):
     slug        = models.SlugField(max_length=120, unique=True, blank=True)
     description = models.TextField(blank=True)
     icon        = models.CharField(max_length=50, blank=True,
-                                   help_text="Emoji or icon class name")
+                                   help_text="Emoji or icon class name (fallback)")
+    image       = models.ImageField(upload_to='categories/', blank=True, null=True,
+                                    help_text="Category image (shown instead of icon)")
     created_at  = models.DateTimeField(auto_now_add=True)
 
     class Meta:

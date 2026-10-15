@@ -4,13 +4,30 @@ from .models import Category, Product
 
 class CategorySerializer(serializers.ModelSerializer):
     product_count = serializers.SerializerMethodField()
+    image_url     = serializers.SerializerMethodField()
 
     class Meta:
         model  = Category
-        fields = ['id', 'name', 'slug', 'description', 'icon', 'product_count']
+        fields = ['id', 'name', 'slug', 'description', 'icon', 'image_url', 'product_count']
 
     def get_product_count(self, obj):
         return obj.products.filter(is_active=True).count()
+
+    def get_image_url(self, obj):
+        try:
+            if not obj.image:
+                return None
+            url = obj.image.url
+            if url.startswith('http://') or url.startswith('https://'):
+                return url
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(url)
+            from django.conf import settings
+            backend_url = getattr(settings, 'BACKEND_URL', 'http://127.0.0.1:8000')
+            return f"{backend_url.rstrip('/')}{url}"
+        except Exception:
+            return None
 
 
 class ProductSerializer(serializers.ModelSerializer):

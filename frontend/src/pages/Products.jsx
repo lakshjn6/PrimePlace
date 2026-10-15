@@ -55,7 +55,11 @@ export default function Products() {
               style={{ ...s.filterBtn, ...(activeCategory === cat.slug ? s.filterActive : {}) }}
               onClick={() => setSearchParams({ category: cat.slug })}
             >
-              {cat.icon} {cat.name}
+              {cat.image_url
+                ? <img src={cat.image_url} alt={cat.name} style={s.filterCatImg} />
+                : <span>{cat.icon}</span>
+              }
+              {cat.name}
             </button>
           ))}
         </div>
@@ -160,7 +164,13 @@ const s = {
   container: { maxWidth:1200, margin:'0 auto', padding:'48px 24px' },
   title: { fontSize:36, fontWeight:800, marginBottom:32, fontFamily:'Georgia,serif' },
   filters: { display:'flex', gap:10, flexWrap:'wrap', marginBottom:40 },
-  filterBtn: { background:'#0e0e12', border:'1px solid #1e1e2e', color:'#888', padding:'8px 16px', borderRadius:20, cursor:'pointer', fontSize:13, fontWeight:500, transition:'all 0.2s' },
+  filterBtn: {
+    background:'#0e0e12', border:'1px solid #1e1e2e', color:'#888',
+    padding:'7px 14px', borderRadius:20, cursor:'pointer', fontSize:13,
+    fontWeight:500, transition:'all 0.2s',
+    display:'flex', alignItems:'center', gap:7,
+  },
+  filterCatImg: { width:20, height:20, borderRadius:'50%', objectFit:'cover', flexShrink:0 },
   filterActive: { background:'#7c5cfc', color:'#fff', borderColor:'#7c5cfc' },
   grid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px,1fr))', gap:24 },
   loading: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px,1fr))', gap:24 },

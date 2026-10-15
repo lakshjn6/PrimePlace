@@ -85,7 +85,12 @@ export default function Home() {
           }}>
             {categories.map(cat => (
               <Link key={cat.id} to={`/products?category=${cat.slug}`} style={s.catCard}>
-                <span style={s.catIcon}>{cat.icon || '📦'}</span>
+                <div style={s.catImgWrap}>
+                  {cat.image_url
+                    ? <img src={cat.image_url} alt={cat.name} style={s.catImg} />
+                    : <span style={s.catIcon}>{cat.icon || '📦'}</span>
+                  }
+                </div>
                 <span style={s.catName}>{cat.name}</span>
                 <span style={s.catCount}>{cat.product_count} plan{cat.product_count !== 1 ? 's' : ''}</span>
               </Link>
@@ -202,10 +207,21 @@ const s = {
   loading: { color: '#555' },
   emptyBox: { textAlign: 'center', padding: '32px 0' },
   catGrid: { display: 'grid', gap: 12 },
-  catCard: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, padding: '18px 10px', textAlign: 'center', textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 6 },
-  catIcon: { fontSize: 26 },
-  catName: { color: '#fff', fontWeight: 600, fontSize: 13 },
-  catCount: { color: '#666', fontSize: 11 },
+  catCard: {
+    background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14,
+    textDecoration: 'none', display: 'flex', flexDirection: 'column',
+    alignItems: 'center', gap: 6, overflow: 'hidden',
+    transition: 'border-color 0.2s, transform 0.2s',
+  },
+  catImgWrap: {
+    width: '100%', height: 100, overflow: 'hidden',
+    background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+  },
+  catImg:   { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+  catIcon:  { fontSize: 32, lineHeight: 1 },
+  catName:  { color: '#fff', fontWeight: 600, fontSize: 13, padding: '0 8px', textAlign: 'center' },
+  catCount: { color: '#666', fontSize: 11, paddingBottom: 12 },
   prodGrid: { display: 'grid', gap: 14 },
   prodCard: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden' },
   prodImgWrapper: { width: '100%', height: 160, overflow: 'hidden', background: '#111', flexShrink: 0 },
