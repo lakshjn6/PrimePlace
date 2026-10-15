@@ -133,8 +133,8 @@ export default function Checkout() {
   return (
     <>
       <style>{`
-        .co-page      { background:#060608; min-height:100vh; color:#fff; }
-        .co-container { max-width:1000px; margin:0 auto; padding:48px 24px; box-sizing:border-box; }
+        .co-page      { background:#060608; min-height:100vh; color:#fff; overflow-x:hidden; }
+        .co-container { max-width:1000px; margin:0 auto; padding:48px 24px; box-sizing:border-box; width:100%; }
 
         .co-steps { display:flex; gap:24px; margin-bottom:40px; align-items:center; flex-wrap:wrap; }
         .co-step-item   { display:flex; align-items:center; gap:10px; }
@@ -174,12 +174,21 @@ export default function Checkout() {
           background:#080810; border:1px solid #2a2a4a;
           border-radius:14px; padding:20px;
           display:flex; flex-direction:column; gap:10px;
+          overflow:hidden; width:100%; box-sizing:border-box;
         }
         .co-bank-title { color:#fff; font-weight:700; font-size:16px; margin:0; }
-        .co-bank-row   { display:flex; justify-content:space-between; color:#888; font-size:14px; }
+        .co-bank-row   {
+          display:flex; justify-content:space-between; align-items:flex-start;
+          color:#888; font-size:14px; gap:8px; flex-wrap:wrap;
+        }
+        .co-bank-row strong {
+          color:#fff; word-break:break-all; overflow-wrap:anywhere;
+          text-align:right; max-width:100%;
+        }
         .co-bank-note  {
           color:#f5a623; font-size:13px; margin:4px 0 0;
           background:rgba(245,166,35,0.08); padding:10px 14px; border-radius:8px;
+          word-wrap:break-word; overflow-wrap:break-word;
         }
         .co-qr-img {
           width:160px; height:160px; object-fit:contain;
@@ -194,6 +203,8 @@ export default function Checkout() {
           border-radius:12px; padding:13px 20px;
           box-shadow:0 4px 16px #7c5cfc44;
           transition:opacity 0.2s;
+          word-break:break-word; text-align:center;
+          box-sizing:border-box; width:100%;
         }
         .co-upi-btn:hover { opacity:0.88; }
 
@@ -238,14 +249,19 @@ export default function Checkout() {
         .co-divider       { border-top:1px solid #1e1e2e; }
 
         @media (max-width: 768px) {
-          .co-container { padding:24px 16px; }
+          .co-container { padding:24px 12px; max-width:100vw; }
           .co-layout    { grid-template-columns:1fr; gap:20px; }
           .co-summary   { position:static; }
-          .co-card      { padding:20px 16px; }
+          .co-card      { padding:20px 14px; }
           .co-steps     { gap:12px; margin-bottom:28px; }
           .co-step-label{ display:none; }
           .co-form-actions { flex-direction:column; }
           .co-back-btn, .co-submit-btn { flex:unset; width:100%; }
+          .co-bank-info { padding:14px; }
+          .co-bank-row  { flex-direction:column; gap:2px; }
+          .co-bank-row strong { text-align:left; }
+          .co-bank-row span   { font-size:12px; color:#666; }
+          .co-qr-img    { width:140px; height:140px; }
         }
       `}</style>
 
