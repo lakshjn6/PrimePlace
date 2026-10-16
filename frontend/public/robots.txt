@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://primemarket.co.in/sitemap.xml
