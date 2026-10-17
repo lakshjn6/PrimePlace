@@ -97,7 +97,7 @@ export default function ReviewSection() {
   );
 
   if (loading) return (
-    <section style={s.section}>
+    <section id="reviews" style={s.section}>
       <div style={s.container}>
         <h2 style={s.title}>Customer Reviews</h2>
         <div style={s.loadingMessage}>Loading reviews...</div>
@@ -166,7 +166,7 @@ export default function ReviewSection() {
         }
       `}</style>
 
-      <section style={s.section}>
+      <section id="reviews" style={s.section}>
         <div style={s.container}>
           <div style={s.header}>
             <h2 style={s.title}>Customer Reviews</h2>
@@ -275,6 +275,7 @@ const s = {
   section: {
     background:'#060608', padding:'48px 16px',
     borderTop:'1px solid #1a1a2e', boxSizing:'border-box',
+    scrollMarginTop: 80,
   },
   container: { maxWidth:1100, margin:'0 auto', width:'100%' },
   header: { textAlign:'center', marginBottom:40 },
