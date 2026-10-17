@@ -187,21 +187,21 @@ export default function OfferBanner() {
 
           {/* ── Left: copy ── */}
           <div className="pm-copy">
-            <p className="pm-small">{user ? 'Welcome offer: get' : 'Register today for'}</p>
+            <p className="pm-small">{user ? '' : 'Register today for'}</p>
             <p className="pm-line">
               <b>Spotify free</b>
               {/* Spotify logo SVG */}
               <svg className="pm-logo" viewBox="0 0 76 76" aria-hidden="true">
-                <circle cx="38" cy="38" r="38" fill="#1db954"/>
+                <circle cx="38" cy="38" r="38" fill="#1db954" />
                 <g fill="none" stroke="#07070b" strokeLinecap="round">
-                  <path d="M13 26 Q40 17 66 32" strokeWidth="7.5"/>
-                  <path d="M16 40 Q40 33 63 45" strokeWidth="6"/>
-                  <path d="M20 53 Q40 48 58 56" strokeWidth="5"/>
+                  <path d="M13 26 Q40 17 66 32" strokeWidth="7.5" />
+                  <path d="M16 40 Q40 33 63 45" strokeWidth="6" />
+                  <path d="M20 53 Q40 48 58 56" strokeWidth="5" />
                 </g>
               </svg>
             </p>
             <p className="pm-small">up to 3 months</p>
-            <p className="pm-disclaimer">* only for new accounts with 0 orders</p>
+            <p className="pm-disclaimer">* only for new users</p>
           </div>
 
           {/* ── Right: how-to steps ── */}
