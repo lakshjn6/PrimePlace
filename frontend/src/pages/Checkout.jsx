@@ -165,10 +165,10 @@ export default function Checkout() {
         .co-step-label.active { color:#fff; }
 
         .co-layout {
-          display:grid;
-          grid-template-columns:1fr 300px;
-          gap:32px;
-          align-items:start;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 300px;
+          gap: 32px;
+          align-items: start;
         }
 
         .co-card {
