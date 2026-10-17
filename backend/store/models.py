@@ -50,6 +50,8 @@ class Product(models.Model):
     features       = models.JSONField(default=list,
                                       help_text='List of feature strings')
     price          = models.DecimalField(max_digits=10, decimal_places=2)
+    discounted_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                           help_text='Special discounted price for new users with 0 orders')
     billing_cycle  = models.CharField(max_length=20, choices=BILLING_CHOICES,
                                       default='monthly')
     image          = models.ImageField(upload_to='products/', blank=True, null=True)

@@ -33,12 +33,12 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display   = ('image_preview', 'name', 'category', 'price', 'billing_cycle', 'is_active', 'is_featured')
+    list_display   = ('image_preview', 'name', 'category', 'price', 'discounted_price', 'billing_cycle', 'is_active', 'is_featured')
     list_display_links = ('name',)
     list_filter    = ('category', 'billing_cycle', 'is_active', 'is_featured')
     search_fields  = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
-    list_editable  = ('is_active', 'is_featured')
+    list_editable  = ('price', 'discounted_price', 'is_active', 'is_featured')
     readonly_fields = ('image_preview_large',)
 
     def image_preview(self, obj):

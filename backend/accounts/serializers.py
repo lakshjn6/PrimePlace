@@ -52,9 +52,14 @@ class LoginSerializer(serializers.Serializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    order_count = serializers.SerializerMethodField()
+
     class Meta:
         model  = Account
         fields = ['id', 'first_name', 'last_name', 'username',
                   'email', 'phone_number', 'date_joined',
-                  'is_admin', 'is_active']
-        read_only_fields = ['id', 'date_joined', 'is_admin', 'is_active']
+                  'is_admin', 'is_active', 'order_count']
+        read_only_fields = ['id', 'date_joined', 'is_admin', 'is_active', 'order_count']
+
+    def get_order_count(self, obj):
+        return obj.orders.count()

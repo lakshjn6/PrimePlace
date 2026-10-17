@@ -40,7 +40,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model  = Product
         fields = ['id', 'category', 'category_name', 'category_slug', 'category_icon',
                   'name', 'slug', 'description', 'features',
-                  'price', 'billing_cycle', 'image_url', 'is_active',
+                  'price', 'discounted_price', 'billing_cycle', 'image_url', 'is_active',
                   'is_featured', 'created_at']
     
     def get_image_url(self, obj): 
@@ -70,4 +70,4 @@ class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Product
         fields = ['category', 'name', 'description', 'features',
-                  'price', 'billing_cycle', 'image', 'is_active', 'is_featured']
+                  'price', 'discounted_price', 'billing_cycle', 'image', 'is_active', 'is_featured']

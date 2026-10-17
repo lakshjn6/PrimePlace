@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storeAPI } from '../api/client';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 
 const DEBOUNCE_MS = 320;
 
 export default function SearchBar({ onClose }) {
+  const { user }                = useAuth();
   const [query, setQuery]       = useState('');
   const [results, setResults]   = useState([]);
   const [suggestion, setSugg]   = useState(null);
@@ -183,7 +185,25 @@ export default function SearchBar({ onClose }) {
                   </div>
 
                   {/* Price */}
-                  <div style={s.itemPrice}>{formatPrice(p.price)}</div>
+                  <div style={s.itemPrice}>
+                    {(() => {
+                      const hasZeroOrders = !user || (user.order_count ?? 0) === 0;
+                      const showDiscount = hasZeroOrders && p.discounted_price !== null && p.discounted_price !== undefined;
+                      if (showDiscount) {
+                        return (
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ textDecoration: 'line-through', color: '#666', fontSize: 12, marginRight: 5 }}>
+                              {formatPrice(p.price)}
+                            </span>
+                            <span style={{ color: '#1db954', fontWeight: 800 }}>
+                              {parseFloat(p.discounted_price) === 0 ? 'FREE (₹0)' : formatPrice(p.discounted_price)}
+                            </span>
+                          </div>
+                        );
+                      }
+                      return formatPrice(p.price);
+                    })()}
+                  </div>
                 </div>
               ))}
 

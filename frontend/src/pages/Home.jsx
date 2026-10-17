@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import ReviewSection from '../components/ReviewSection'; 
 import DiwaliEffects from '../components/DiwaliEffects';
+import OfferBanner from '../components/OfferBanner';
 
 export default function Home() {
   const { user } = useAuth();                        // ← ADDED
@@ -42,6 +43,11 @@ export default function Home() {
         <div style={{ position: 'relative', zIndex: 5 }}>
           <div className="diwali-festive-badge">
             <span>🪔</span> Shubh Deepavali • Festive Offers <span>✨</span>
+          </div>
+
+          {/* ── Offer Banner: guests or users with no orders ── */}
+          <div style={{ width: '100%', margin: isMobile ? '18px 0 24px' : '20px 0 36px', textAlign: 'left' }}>
+            <OfferBanner />
           </div>
 
           <div className="diwali-hero-title-box">
@@ -154,8 +160,11 @@ const GRADIENTS = [
 
 function ProductCard({ product }) {
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const [imgError, setImgError] = React.useState(false);
   const gradient = GRADIENTS[(product.id || 0) % GRADIENTS.length];
+  const hasZeroOrders = !user || (user.order_count ?? 0) === 0;
+  const showDiscount = hasZeroOrders && product.discounted_price !== null && product.discounted_price !== undefined;
 
   return (
     <Link to={`/products/${product.slug}`} style={s.prodCard}>
@@ -184,7 +193,18 @@ function ProductCard({ product }) {
           : product.description}
       </p>
       <div style={s.prodFooter}>
-        <span style={s.prodPrice}>{formatPrice(product.price)}</span>
+        {showDiscount ? (
+          <div>
+            <span style={{ textDecoration: 'line-through', color: '#777', fontSize: 16, marginRight: 8 }}>
+              {formatPrice(product.price)}
+            </span>
+            <span style={{ ...s.prodPrice, color: '#1db954' }}>
+              {parseFloat(product.discounted_price) === 0 ? 'FREE (₹0)' : formatPrice(product.discounted_price)}
+            </span>
+          </div>
+        ) : (
+          <span style={s.prodPrice}>{formatPrice(product.price)}</span>
+        )}
         <span style={s.prodCycle}>/{product.billing_cycle}</span>
       </div>
     </Link>

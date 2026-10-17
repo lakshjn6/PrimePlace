@@ -85,18 +85,24 @@ class CheckoutView(APIView):
                 order=order,
                 product=cart_item.product,
                 quantity=cart_item.quantity,
-                price=cart_item.product.price,
+                price=cart_item.effective_price,
             )
 
         # Create payment record
         data = serializer.validated_data
         screenshot = data.get('payment_screenshot')
+
+        # Ensure transaction_ref is unique even if welcome-customer-{id} was reused
+        transaction_ref = data['transaction_ref']
+        if Payment.objects.filter(transaction_ref=transaction_ref).exists():
+            transaction_ref = f"{transaction_ref}-{uuid.uuid4().hex[:6]}"
+
         payment = Payment.objects.create(
             order=order,
             user=request.user,
             payer_name=data['payer_name'],
             payer_email=data['payer_email'],
-            transaction_ref=data['transaction_ref'],
+            transaction_ref=transaction_ref,
             amount=total,
             payment_method=data.get('payment_method', 'bank_transfer'),
             notes=data.get('notes', ''),

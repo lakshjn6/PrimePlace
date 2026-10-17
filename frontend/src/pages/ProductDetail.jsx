@@ -248,10 +248,34 @@ export default function ProductDetail() {
 
                 <div className="pd-card-body">
                   <div className="pd-pricing-top">
-                    <div className="pd-price-row">
-                      <span className="pd-price">{formatPrice(product.price)}</span>
-                      <span className="pd-cycle">/{product.billing_cycle}</span>
-                    </div>
+                    {(() => {
+                      const hasZeroOrders = !user || (user.order_count ?? 0) === 0;
+                      const showDiscount = hasZeroOrders && product.discounted_price !== null && product.discounted_price !== undefined;
+                      return (
+                        <>
+                          <div className="pd-price-row">
+                            {showDiscount ? (
+                              <div>
+                                <span style={{ textDecoration: 'line-through', color: '#777', fontSize: 24, marginRight: 12 }}>
+                                  {formatPrice(product.price)}
+                                </span>
+                                <span className="pd-price" style={{ color: '#1db954' }}>
+                                  {parseFloat(product.discounted_price) === 0 ? 'FREE (₹0)' : formatPrice(product.discounted_price)}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="pd-price">{formatPrice(product.price)}</span>
+                            )}
+                            <span className="pd-cycle">/{product.billing_cycle}</span>
+                          </div>
+                          {showDiscount && (
+                            <div style={{ color: '#f5b82e', fontSize: 13, fontWeight: 600, marginTop: 4 }}>
+                              ✨ Special Welcome Offer for your 1st order!
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                     <p className="pd-pricing-desc">Valid for {product.billing_cycle}</p>
                   </div>
 

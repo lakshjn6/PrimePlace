@@ -98,10 +98,13 @@ const GRADIENTS = [
 
 function ProductCard({ product, onAddToCart }) {
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const features = Array.isArray(product.features) ? product.features : [];
   const [imgError, setImgError] = React.useState(false);
   // pick a stable gradient based on the product id
   const gradient = GRADIENTS[(product.id || 0) % GRADIENTS.length];
+  const hasZeroOrders = !user || (user.order_count ?? 0) === 0;
+  const showDiscount = hasZeroOrders && product.discounted_price !== null && product.discounted_price !== undefined;
 
   return (
     <div style={s.card}>
@@ -145,7 +148,18 @@ function ProductCard({ product, onAddToCart }) {
 
       <div style={s.cardFooter}>
         <div>
-          <span style={s.price}>{formatPrice(product.price)}</span>
+          {showDiscount ? (
+            <div>
+              <span style={{ textDecoration: 'line-through', color: '#777', fontSize: 14, marginRight: 6 }}>
+                {formatPrice(product.price)}
+              </span>
+              <span style={{ ...s.price, color: '#1db954' }}>
+                {parseFloat(product.discounted_price) === 0 ? 'FREE (₹0)' : formatPrice(product.discounted_price)}
+              </span>
+            </div>
+          ) : (
+            <span style={s.price}>{formatPrice(product.price)}</span>
+          )}
           <span style={s.cycle}>/{product.billing_cycle}</span>
         </div>
         <div style={s.cardActions}>

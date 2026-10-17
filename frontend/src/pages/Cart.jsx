@@ -138,7 +138,20 @@ export default function Cart() {
                       <span className="cart-qty">{item.quantity}</span>
                       <button className="cart-qty-btn" onClick={() => handleUpdate(item.id, item.quantity + 1)}>+</button>
                     </div>
-                    <div className="cart-item-price">{formatPrice(item.subtotal)}</div>
+                    <div className="cart-item-price">
+                      {item.effective_price && parseFloat(item.effective_price) < parseFloat(item.product.price) ? (
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ textDecoration: 'line-through', color: '#666', fontSize: 13, marginRight: 6 }}>
+                            {formatPrice(parseFloat(item.product.price) * item.quantity)}
+                          </span>
+                          <span style={{ color: '#1db954', fontWeight: 800 }}>
+                            {parseFloat(item.subtotal) === 0 ? 'FREE (₹0)' : formatPrice(item.subtotal)}
+                          </span>
+                        </div>
+                      ) : (
+                        formatPrice(item.subtotal)
+                      )}
+                    </div>
                     <button className="cart-remove-btn" onClick={() => handleRemove(item.id)}>✕</button>
                   </div>
                 </div>
@@ -148,19 +161,36 @@ export default function Cart() {
             {/* Summary */}
             <div className="cart-summary">
               <h2 className="cart-summary-title">Order Summary</h2>
-              <div className="cart-summary-row">
-                <span>Items ({cart.count})</span>
-                <span>{formatPrice(cart.total)}</span>
-              </div>
-              <div className="cart-summary-row">
-                <span style={{ color: '#4caf50' }}>Discount</span>
-                <span style={{ color: '#4caf50' }}>{formatPrice(0)}</span>
-              </div>
-              <div className="cart-divider" />
-              <div className="cart-total-row">
-                <span>Total</span>
-                <span>{formatPrice(cart.total)}</span>
-              </div>
+              {(() => {
+                const originalTotal = cart.items.reduce((acc, item) => acc + (parseFloat(item.product.price) * item.quantity), 0);
+                const discount = Math.max(0, originalTotal - parseFloat(cart.total || 0));
+                return (
+                  <>
+                    <div className="cart-summary-row">
+                      <span>Items ({cart.count})</span>
+                      <span>{formatPrice(originalTotal)}</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="cart-summary-row">
+                        <span style={{ color: '#1db954' }}>Welcome Discount</span>
+                        <span style={{ color: '#1db954', fontWeight: 700 }}>− {formatPrice(discount)}</span>
+                      </div>
+                    )}
+                    <div className="cart-divider" />
+                    <div className="cart-total-row">
+                      <span>Total</span>
+                      <span style={{ color: parseFloat(cart.total || 0) === 0 ? '#1db954' : '#fff' }}>
+                        {parseFloat(cart.total || 0) === 0 ? 'FREE (₹0)' : formatPrice(cart.total)}
+                      </span>
+                    </div>
+                    {parseFloat(cart.total || 0) === 0 && (
+                      <div style={{ background: 'rgba(29, 185, 84, 0.1)', border: '1px solid rgba(29, 185, 84, 0.3)', borderRadius: 10, padding: '8px 12px', color: '#1db954', fontSize: 13, textAlign: 'center' }}>
+                        🎉 100% Free Welcome Offer applied!
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
               <button className="cart-checkout-btn" onClick={() => navigate('/checkout')}>
                 Proceed to Checkout →
               </button>

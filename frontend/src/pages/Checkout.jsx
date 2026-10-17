@@ -75,12 +75,14 @@ function UsdConverter({ inr }) {
 // ── Main Checkout ──────────────────────────────────────────────────────────────
 export default function Checkout() {
   const { cart, fetchCart, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, loadUser } = useAuth();
   const { formatPrice, rate } = useCurrency();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
+  const isZeroTotal = parseFloat(cart.total || 0) === 0;
+
   const [form, setForm] = useState({
     payer_name: user ? `${user.first_name} ${user.last_name}` : '',
     payer_email: user?.email || '',
@@ -92,6 +94,18 @@ export default function Checkout() {
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
 
+  useEffect(() => {
+    if (user) {
+      setForm(f => ({
+        ...f,
+        payer_name: f.payer_name || `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+        payer_email: f.payer_email || user.email || '',
+        transaction_ref: isZeroTotal ? `welcome-customer-${user.id}` : f.transaction_ref,
+        payment_method: isZeroTotal ? 'welcome_offer' : f.payment_method,
+      }));
+    }
+  }, [user, isZeroTotal]);
+
   const handleChange = e => {
     const { name, value, files } = e.target;
     setForm(f => ({ ...f, [name]: files ? files[0] : value }));
@@ -99,23 +113,25 @@ export default function Checkout() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.transaction_ref.trim()) { toast.error('Enter transaction reference'); return; }
+    const txRef = isZeroTotal ? (form.transaction_ref || `welcome-customer-${user?.id || 'new'}`) : form.transaction_ref;
+    if (!txRef.trim()) { toast.error('Enter transaction reference'); return; }
 
     setLoading(true);
     try {
       const fd = new FormData();
       fd.append('payer_name', form.payer_name);
       fd.append('payer_email', form.payer_email);
-      fd.append('transaction_ref', form.transaction_ref);
-      fd.append('payment_method', form.payment_method);
+      fd.append('transaction_ref', txRef);
+      fd.append('payment_method', isZeroTotal ? 'welcome_offer' : form.payment_method);
       fd.append('notes', form.notes || '');
-      if (form.payment_screenshot instanceof File) {
+      if (!isZeroTotal && form.payment_screenshot instanceof File) {
         fd.append('payment_screenshot', form.payment_screenshot);
       }
 
       const { data } = await ordersAPI.checkout(fd);
       setOrder(data.order);
       await clearCart();
+      if (loadUser) { await loadUser(); }
       setStep(3);
     } catch (err) {
       const errs = err.response?.data;
@@ -293,11 +309,24 @@ export default function Checkout() {
                         <div className="co-order-name">{item.product.name}</div>
                         <div className="co-order-cat">{item.product.category_name} · {item.product.billing_cycle}</div>
                       </div>
-                      <div className="co-order-price">{formatPrice(item.subtotal)}</div>
+                      <div className="co-order-price">
+                        {item.effective_price && parseFloat(item.effective_price) < parseFloat(item.product.price) ? (
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ textDecoration: 'line-through', color: '#666', fontSize: 13, marginRight: 6 }}>
+                              {formatPrice(parseFloat(item.product.price) * item.quantity)}
+                            </span>
+                            <span style={{ color: '#1db954', fontWeight: 800 }}>
+                              {parseFloat(item.subtotal) === 0 ? 'FREE (₹0)' : formatPrice(item.subtotal)}
+                            </span>
+                          </div>
+                        ) : (
+                          formatPrice(item.subtotal)
+                        )}
+                      </div>
                     </div>
                   ))}
                   <button className="co-next-btn" onClick={() => setStep(2)}>
-                    Continue to Payment →
+                    {isZeroTotal ? 'Continue to Confirm →' : 'Continue to Payment →'}
                   </button>
                 </div>
               )}
@@ -305,89 +334,108 @@ export default function Checkout() {
               {/* STEP 2 — Payment */}
               {step === 2 && (
                 <form onSubmit={handleSubmit} className="co-card">
-                  <h2 className="co-card-title">Payment Details</h2>
+                  <h2 className="co-card-title">
+                    {isZeroTotal ? 'Confirm Free Order' : 'Payment Details'}
+                  </h2>
 
-                  {/* ── UPI (Always in Indian Rs) ── */}
-                  <div className="co-bank-info">
-                    <h3 className="co-bank-title">📤 Pay via UPI</h3>
-                    <img
-                      src={require('../images/upi_pay.png')}
-                      alt="UPI QR"
-                      className="co-qr-img"
-                    />
-                    <div className="co-bank-row">
-                      <span>UPI Id:</span><strong>Jainutkarsh@fam</strong>
+                  {isZeroTotal ? (
+                    /* ── When Cart Total is 0: No QR, No UTR, No Screenshot ── */
+                    <div style={{
+                      background: 'radial-gradient(circle at 0% 0%, rgba(124, 92, 252, 0.25), transparent 55%), radial-gradient(circle at 100% 100%, rgba(29, 185, 84, 0.25), transparent 50%), #0c0c16',
+                      border: '1.5px solid #1db954',
+                      borderRadius: 16,
+                      padding: '24px 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 12,
+                      textAlign: 'center',
+                    }}>
+                      <div style={{ fontSize: 44 }}>🎁</div>
+                      <h3 style={{ color: '#1db954', margin: 0, fontSize: 22, fontWeight: 800 }}>
+                        Welcome Offer Applied!
+                      </h3>
+                      <p style={{ color: '#ccc', margin: 0, fontSize: 14, lineHeight: 1.6 }}>
+                        Your total amount is <strong style={{ color: '#1db954', fontSize: 16 }}>₹0 (FREE)</strong>. No payment, QR code, UTR number, or payment screenshot is required.
+                      </p>
+                      <div style={{
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        border: '1px dashed rgba(29, 185, 84, 0.5)',
+                        borderRadius: 10,
+                        padding: '10px 16px',
+                        color: '#aaa',
+                        fontSize: 13,
+                        display: 'inline-block',
+                        margin: '6px auto 0',
+                      }}>
+                        Auto-assigned Reference ID: <strong style={{ color: '#fff' }}>welcome-customer-{user?.id}</strong>
+                      </div>
                     </div>
-                    <div className="co-bank-row">
-                      <span>Amount:</span>
-                      <strong style={{ color: '#7c5cfc' }}>₹{cart.total}</strong>
-                    </div>
-                    <a
-                      href={`upi://pay?pa=Jainutkarsh@fam&pn=PrimeMarket&am=${cart.total}&tn=PrimeMarket`}
-                      className="co-upi-btn"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 5v14M5 12l7 7 7-7" />
-                      </svg>
-                      Tap to Pay ₹{cart.total} via UPI
-                    </a>
-                    <p className="co-bank-note">
-                      ⚡ Opens GPay / PhonePe / Paytm automatically on your phone.
-                    </p>
-                  </div>
+                  ) : (
+                    <>
+                      {/* ── UPI (Always in Indian Rs) ── */}
+                      <div className="co-bank-info">
+                        <h3 className="co-bank-title">📤 Pay via UPI</h3>
+                        <img
+                          src={require('../images/upi_pay.png')}
+                          alt="UPI QR"
+                          className="co-qr-img"
+                        />
+                        <div className="co-bank-row">
+                          <span>UPI Id:</span><strong>Jainutkarsh@fam</strong>
+                        </div>
+                        <div className="co-bank-row">
+                          <span>Amount:</span>
+                          <strong style={{ color: '#7c5cfc' }}>₹{cart.total}</strong>
+                        </div>
+                        <a
+                          href={`upi://pay?pa=Jainutkarsh@fam&pn=PrimeMarket&am=${cart.total}&tn=PrimeMarket`}
+                          className="co-upi-btn"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14M5 12l7 7 7-7" />
+                          </svg>
+                          Tap to Pay ₹{cart.total} via UPI
+                        </a>
+                        <p className="co-bank-note">
+                          ⚡ Opens GPay / PhonePe / Paytm automatically on your phone.
+                        </p>
+                      </div>
 
+                      {/* ── Binance (Shows in Dollars) ── */}
+                      <div className="co-bank-info">
+                        <h3 className="co-bank-title">📤 Pay via USDT (BEP 20) </h3>
+                        <div className="co-bank-row">
+                          <span>Wallet Address:</span><strong>0x8f5a4e4c1c6bc94ae08ca67d7a328935b189e43e</strong>
+                        </div>
+                        <div className="co-bank-row">
+                          <span>Amount (USD / USDT):</span>
+                          <strong style={{ color: '#7c5cfc' }}>${(parseFloat(cart.total || 0) * (rate || 0.0116)).toFixed(2)} USD</strong>
+                        </div>
+                        <div className="co-bank-row" style={{ fontSize: 12, color: '#777' }}>
+                          <span>INR Equivalent:</span><span>₹{cart.total}</span>
+                        </div>
+                      </div>
 
-
-                  {/* ── Binance (Shows in Dollars) ── */}
-                  <div className="co-bank-info">
-                    <h3 className="co-bank-title">📤 Pay via USDT (BEP 20) </h3>
-                    <div className="co-bank-row">
-                      <span>Wallet Address:</span><strong>0x8f5a4e4c1c6bc94ae08ca67d7a328935b189e43e</strong>
-                    </div>
-                    <div className="co-bank-row">
-                      <span>Amount (USD / USDT):</span>
-                      <strong style={{ color: '#7c5cfc' }}>${(parseFloat(cart.total || 0) * (rate || 0.0116)).toFixed(2)} USD</strong>
-                    </div>
-                    <div className="co-bank-row" style={{ fontSize: 12, color: '#777' }}>
-                      <span>INR Equivalent:</span><span>₹{cart.total}</span>
-                    </div>
-                  </div>
-
-
-                  <div className="co-bank-info">
-                    <h3 className="co-bank-title">📤 Pay via Binance</h3>
-                    <img
-                      src={require('../images/Final_Binance.png')}
-                      alt="Binance QR"
-                      className="co-qr-img"
-                    />
-                    <div className="co-bank-row">
-                      <span>Binance ID:</span><strong>1286924779</strong>
-                    </div>
-                    <div className="co-bank-row">
-                      <span>Amount (USD / USDT):</span>
-                      <strong style={{ color: '#7c5cfc' }}>${(parseFloat(cart.total || 0) * (rate || 0.0116)).toFixed(2)} USD</strong>
-                    </div>
-                    <div className="co-bank-row" style={{ fontSize: 12, color: '#777' }}>
-                      <span>INR Equivalent:</span><span>₹{cart.total}</span>
-                    </div>
-                  </div>
-
-                  {/* ── Bank Transfer ── */}
-                  {/* <div className="co-bank-info">
-                    <h3 className="co-bank-title">🏦 Bank Transfer</h3>
-                    <div className="co-bank-row"><span>Account Name:</span><strong>UTKARSH JAIN</strong></div>
-                    <div className="co-bank-row"><span>Account Number:</span><strong>5010 6081 8564</strong></div>
-                    <div className="co-bank-row"><span>IFSC Code:</span><strong>NSPB0000002</strong></div>
-                    <div className="co-bank-row"><span>Branch:</span><strong>one international centre, prabhadevi</strong></div>
-                    <div className="co-bank-row">
-                      <span>Amount:</span>
-                      <strong style={{ color: '#7c5cfc' }}>₹{cart.total}</strong>
-                    </div>
-                    <p className="co-bank-note">
-                      ⚠️ After transferring, fill the form below with your transaction details.
-                    </p>
-                  </div> */}
+                      <div className="co-bank-info">
+                        <h3 className="co-bank-title">📤 Pay via Binance</h3>
+                        <img
+                          src={require('../images/Final_Binance.png')}
+                          alt="Binance QR"
+                          className="co-qr-img"
+                        />
+                        <div className="co-bank-row">
+                          <span>Binance ID:</span><strong>1286924779</strong>
+                        </div>
+                        <div className="co-bank-row">
+                          <span>Amount (USD / USDT):</span>
+                          <strong style={{ color: '#7c5cfc' }}>${(parseFloat(cart.total || 0) * (rate || 0.0116)).toFixed(2)} USD</strong>
+                        </div>
+                        <div className="co-bank-row" style={{ fontSize: 12, color: '#777' }}>
+                          <span>INR Equivalent:</span><span>₹{cart.total}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   {/* ── Form fields ── */}
                   <div className="co-field">
@@ -398,36 +446,42 @@ export default function Checkout() {
                     <label className="co-label">Your Email *</label>
                     <input className="co-input" name="payer_email" type="email" value={form.payer_email} onChange={handleChange} required />
                   </div>
-                  <div className="co-field">
-                    <label className="co-label">Transaction Reference / UTR Number *</label>
-                    <input className="co-input" name="transaction_ref" placeholder="e.g. UTR123456789" value={form.transaction_ref} onChange={handleChange} required />
-                  </div>
-                  <div className="co-field">
-                    <label className="co-label">Payment Method</label>
-                    <select className="co-input" name="payment_method" value={form.payment_method} onChange={handleChange}>
-                      <option value="upi">UPI</option>
-                      <option value="binance">Binance</option>
-                      <option value="bank_transfer">Bank Transfer</option>
-                    </select>
-                  </div>
-                  <div className="co-field">
-                    <label className="co-label">Payment Screenshot (optional but recommended)</label>
-                    <input
-                      className="co-input"
-                      style={{ padding: '10px 14px' }}
-                      type="file"
-                      name="payment_screenshot"
-                      accept="image/*"
-                      onChange={handleChange}
-                    />
-                    {form.payment_screenshot instanceof File && (
-                      <img
-                        src={URL.createObjectURL(form.payment_screenshot)}
-                        alt="preview"
-                        className="co-screenshot-preview"
-                      />
-                    )}
-                  </div>
+
+                  {!isZeroTotal && (
+                    <>
+                      <div className="co-field">
+                        <label className="co-label">Transaction Reference / UTR Number *</label>
+                        <input className="co-input" name="transaction_ref" placeholder="e.g. UTR123456789" value={form.transaction_ref} onChange={handleChange} required />
+                      </div>
+                      <div className="co-field">
+                        <label className="co-label">Payment Method</label>
+                        <select className="co-input" name="payment_method" value={form.payment_method} onChange={handleChange}>
+                          <option value="upi">UPI</option>
+                          <option value="binance">Binance</option>
+                          <option value="bank_transfer">Bank Transfer</option>
+                        </select>
+                      </div>
+                      <div className="co-field">
+                        <label className="co-label">Payment Screenshot (optional but recommended)</label>
+                        <input
+                          className="co-input"
+                          style={{ padding: '10px 14px' }}
+                          type="file"
+                          name="payment_screenshot"
+                          accept="image/*"
+                          onChange={handleChange}
+                        />
+                        {form.payment_screenshot instanceof File && (
+                          <img
+                            src={URL.createObjectURL(form.payment_screenshot)}
+                            alt="preview"
+                            className="co-screenshot-preview"
+                          />
+                        )}
+                      </div>
+                    </>
+                  )}
+
                   <div className="co-field">
                     <label className="co-label">Notes (optional)</label>
                     <textarea
@@ -442,8 +496,8 @@ export default function Checkout() {
 
                   <div className="co-form-actions">
                     <button type="button" className="co-back-btn" onClick={() => setStep(1)}>← Back</button>
-                    <button className="co-submit-btn" type="submit" disabled={loading}>
-                      {loading ? 'Placing Order...' : '✓ Confirm Order'}
+                    <button className="co-submit-btn" type="submit" disabled={loading} style={{ background: isZeroTotal ? '#1db954' : '#4caf50' }}>
+                      {loading ? 'Placing Order...' : isZeroTotal ? '✓ Place Free Order' : '✓ Confirm Order'}
                     </button>
                   </div>
                 </form>
@@ -461,10 +515,22 @@ export default function Checkout() {
                   <span>{formatPrice(item.subtotal)}</span>
                 </div>
               ))}
+              {(() => {
+                const originalTotal = cart.items.reduce((acc, item) => acc + (parseFloat(item.product.price) * item.quantity), 0);
+                const discount = Math.max(0, originalTotal - parseFloat(cart.total || 0));
+                return discount > 0 ? (
+                  <div className="co-summary-item" style={{ color: '#1db954' }}>
+                    <span>Discount</span>
+                    <span>− {formatPrice(discount)}</span>
+                  </div>
+                ) : null;
+              })()}
               <div className="co-divider" />
               <div className="co-summary-total">
                 <span>Total</span>
-                <span>{formatPrice(cart.total)}</span>
+                <span style={{ color: isZeroTotal ? '#1db954' : '#fff' }}>
+                  {isZeroTotal ? 'FREE (₹0)' : formatPrice(cart.total)}
+                </span>
               </div>
             </div>
 
