@@ -81,12 +81,28 @@ class CheckoutView(APIView):
 
         # Create order items
         for cart_item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product=cart_item.product,
-                quantity=cart_item.quantity,
-                price=cart_item.effective_price,
-            )
+            if cart_item.has_discount and cart_item.quantity > 1:
+                # 1 item at special offer price
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    quantity=1,
+                    price=cart_item.product.discounted_price,
+                )
+                # Remaining items at regular product price
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    quantity=cart_item.quantity - 1,
+                    price=cart_item.product.price,
+                )
+            else:
+                OrderItem.objects.create(
+                    order=order,
+                    product=cart_item.product,
+                    quantity=cart_item.quantity,
+                    price=cart_item.effective_price,
+                )
 
         # Create payment record
         data = serializer.validated_data

@@ -318,6 +318,11 @@ export default function Checkout() {
                             <span style={{ color: '#1db954', fontWeight: 800 }}>
                               {parseFloat(item.subtotal) === 0 ? 'FREE (₹0)' : formatPrice(item.subtotal)}
                             </span>
+                            {item.quantity > 1 && (
+                              <div style={{ fontSize: 11, color: '#f5b82e', marginTop: 2, whiteSpace: 'nowrap' }}>
+                                1 offer + {item.quantity - 1} regular
+                              </div>
+                            )}
                           </div>
                         ) : (
                           formatPrice(item.subtotal)

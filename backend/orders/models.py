@@ -17,14 +17,25 @@ class Cart(models.Model):
         return f"{self.user.email} — {self.product.name} x{self.quantity}"
 
     @property
+    def has_discount(self):
+        return bool(
+            self.user and
+            self.user.orders.count() == 0 and
+            self.product.discounted_price is not None
+        )
+
+    @property
     def effective_price(self):
-        if self.user and self.user.orders.count() == 0 and self.product.discounted_price is not None:
+        if self.has_discount:
             return self.product.discounted_price
         return self.product.price
 
     @property
     def subtotal(self):
-        return self.effective_price * self.quantity
+        if self.has_discount and self.quantity >= 1:
+            # Only 1 quantity is at offer price; remaining items are at regular price
+            return self.product.discounted_price + (self.product.price * (self.quantity - 1))
+        return self.product.price * self.quantity
 
 
 class Order(models.Model):

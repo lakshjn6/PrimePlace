@@ -7,11 +7,12 @@ class CartSerializer(serializers.ModelSerializer):
     product  = ProductSerializer(read_only=True)
     product_id = serializers.IntegerField(write_only=True)
     effective_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    has_discount = serializers.BooleanField(read_only=True)
     subtotal = serializers.ReadOnlyField()
 
     class Meta:
         model  = Cart
-        fields = ['id', 'product', 'product_id', 'quantity', 'effective_price', 'subtotal', 'added_at']
+        fields = ['id', 'product', 'product_id', 'quantity', 'effective_price', 'has_discount', 'subtotal', 'added_at']
 
     def validate_product_id(self, value):
         from store.models import Product
