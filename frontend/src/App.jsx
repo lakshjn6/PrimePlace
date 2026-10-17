@@ -39,6 +39,8 @@ export default function App() {
               <Navbar />
             <Routes>
               <Route path="/"              element={<Home />} />
+              <Route path="/reviews"       element={<Home scrollToReviews />} />
+              <Route path="/review"        element={<Home scrollToReviews />} />
               <Route path="/register"      element={<Register />} />
               <Route path="/login"         element={<Login />} />
               <Route path="/products"      element={<Products />} />

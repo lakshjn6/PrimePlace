@@ -39,7 +39,7 @@ export default function Navbar() {
       }
     };
 
-    if (location.pathname === '/') {
+    if (location.pathname === '/' || location.pathname === '/reviews' || location.pathname === '/review') {
       scrollToReviews();
     } else {
       navigate('/#reviews');

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { storeAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -7,8 +7,9 @@ import ReviewSection from '../components/ReviewSection';
 import DiwaliEffects from '../components/DiwaliEffects';
 import OfferBanner from '../components/OfferBanner';
 
-export default function Home() {
+export default function Home({ scrollToReviews = false }) {
   const { user } = useAuth();                        // ← ADDED
+  const location = useLocation();
   const [categories, setCategories] = useState([]);
   const [featured,   setFeatured]   = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -29,6 +30,35 @@ export default function Home() {
       setFeatured(featRes.data.slice(0, 6));
     }).finally(() => setLoading(false));
   }, []);
+
+  // Auto-scroll to reviews section if navigating to /reviews, /review, or #reviews
+  useEffect(() => {
+    const isReviewTarget =
+      scrollToReviews ||
+      location.pathname === '/reviews' ||
+      location.pathname === '/review' ||
+      location.hash === '#reviews';
+
+    if (isReviewTarget) {
+      const doScroll = () => {
+        const el = document.getElementById('reviews');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      };
+
+      // Try immediately and at staggered intervals to account for images/data rendering
+      doScroll();
+      const t1 = setTimeout(doScroll, 150);
+      const t2 = setTimeout(doScroll, 400);
+      const t3 = setTimeout(doScroll, 800);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
+    }
+  }, [scrollToReviews, location.pathname, location.hash, loading]);
 
   return (
     <div style={s.page}>

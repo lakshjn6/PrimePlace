@@ -5,6 +5,16 @@ export default function ScrollToTop() {
   const { pathname, hash } = useLocation();
 
   useEffect(() => {
+    if (pathname === '/reviews' || pathname === '/review' || hash === '#reviews') {
+      const timer = setTimeout(() => {
+        const el = document.getElementById('reviews');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+
     if (hash) {
       const id = hash.replace('#', '');
       const timer = setTimeout(() => {
