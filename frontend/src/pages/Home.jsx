@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { storeAPI } from '../api/client';
+import { storeAPI, reviewsAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import ReviewSection from '../components/ReviewSection'; 
+import ReviewSection from '../components/ReviewSection';
 import DiwaliEffects from '../components/DiwaliEffects';
 import OfferBanner from '../components/OfferBanner';
 
@@ -11,9 +11,10 @@ export default function Home({ scrollToReviews = false }) {
   const { user } = useAuth();                        // ← ADDED
   const location = useLocation();
   const [categories, setCategories] = useState([]);
-  const [featured,   setFeatured]   = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [isMobile,   setIsMobile]   = useState(window.innerWidth < 768);
+  const [featured, setFeatured] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [avgRating, setAvgRating] = useState('4.9');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -29,6 +30,22 @@ export default function Home({ scrollToReviews = false }) {
       setCategories(catRes.data);
       setFeatured(featRes.data.slice(0, 6));
     }).finally(() => setLoading(false));
+
+    reviewsAPI.getStats()
+      .then(res => {
+        if (res.data?.average_rating !== undefined && res.data?.average_rating !== null) {
+          setAvgRating(Number(res.data.average_rating).toFixed(1));
+        }
+      })
+      .catch(() => {
+        reviewsAPI.getReviews().then(res => {
+          const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+          if (list.length > 0) {
+            const sum = list.reduce((acc, r) => acc + (r.rating || 5), 0);
+            setAvgRating((sum / list.length).toFixed(1));
+          }
+        }).catch(() => {});
+      });
   }, []);
 
   // Auto-scroll to reviews section if navigating to /reviews, /review, or #reviews
@@ -252,7 +269,7 @@ export default function Home({ scrollToReviews = false }) {
       {/* Featured Plans */}
       {featured.length > 0 && (
         <section style={{ ...s.section, padding: isMobile ? '28px 14px' : '60px 24px' }}>
-          
+
           <h2 style={{ ...s.sectionTitle, fontSize: isMobile ? 20 : 32, marginBottom: isMobile ? 14 : 22 }}>
             Featured Plans
           </h2>
@@ -279,9 +296,9 @@ export default function Home({ scrollToReviews = false }) {
       }}>
         {[
           ['100+', 'Active Subscribers'],
-          ['10+',   'Subscription Plans'],
-          ['5+',   'Categories'],
-          ['24/7',  'Support'],
+          ['10+', 'Subscription Plans'],
+          ['5+', 'Categories'],
+          [`${avgRating}★`, 'Average Rating'],
         ].map(([num, label]) => (
           <div key={label} style={s.statBox}>
             <div style={{ ...s.statNum, fontSize: isMobile ? 26 : 36 }}>{num}</div>
@@ -289,7 +306,7 @@ export default function Home({ scrollToReviews = false }) {
           </div>
         ))}
       </section>
-      <ReviewSection />
+      <ReviewSection onStatsUpdate={(stats) => setAvgRating(stats.avg)} />
 
     </div>
   );
@@ -414,9 +431,9 @@ const s = {
     background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  catImg:   { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
-  catIcon:  { fontSize: 32, lineHeight: 1 },
-  catName:  { color: '#fff', fontWeight: 600, fontSize: 13, padding: '0 8px', textAlign: 'center' },
+  catImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+  catIcon: { fontSize: 32, lineHeight: 1 },
+  catName: { color: '#fff', fontWeight: 600, fontSize: 13, padding: '0 8px', textAlign: 'center' },
   catCount: { color: '#666', fontSize: 11, paddingBottom: 12 },
   prodGrid: { display: 'grid', gap: 14 },
   prodCard: { background: '#0e0e12', border: '1px solid #1e1e2e', borderRadius: 14, textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden' },

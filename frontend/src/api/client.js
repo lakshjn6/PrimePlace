@@ -7,50 +7,56 @@ const API = axios.create({
 
 // Authentication
 export const authAPI = {
-  register:           (data)    => API.post('/auth/register/', data),
-  login:              (data)    => API.post('/auth/login/', data),
-  logout:             ()        => API.post('/auth/logout/'),
-  verifyEmail:        (token)   => API.get(`/auth/verify-email/?token=${token}`),
-  resendVerification: (email)   => API.post('/auth/resend-verification/', { email }),
-  forgotPassword:     (email)   => API.post('/auth/forgot-password/', { email }),
-  verifyResetToken:   (token)   => API.get(`/auth/verify-reset-token/?token=${token}`),
-  resetPassword:      (data)    => API.post('/auth/reset-password/', data),
-  getProfile:         ()        => API.get('/auth/profile/'),
-  updateProfile:      (data)    => API.put('/auth/profile/', data),
-  refreshToken:       (refresh) => API.post('/token/refresh/', { refresh }),
+  register: (data) => API.post('/auth/register/', data),
+  login: (data) => API.post('/auth/login/', data),
+  logout: () => API.post('/auth/logout/'),
+  verifyEmail: (token) => API.get(`/auth/verify-email/?token=${token}`),
+  resendVerification: (email) => API.post('/auth/resend-verification/', { email }),
+  forgotPassword: (email) => API.post('/auth/forgot-password/', { email }),
+  verifyResetToken: (token) => API.get(`/auth/verify-reset-token/?token=${token}`),
+  resetPassword: (data) => API.post('/auth/reset-password/', data),
+  getProfile: () => API.get('/auth/profile/'),
+  updateProfile: (data) => API.put('/auth/profile/', data),
+  refreshToken: (refresh) => API.post('/token/refresh/', { refresh }),
 };
 
 // Store
 export const storeAPI = {
-  getCategories:   ()       => API.get('/store/categories/'),
-  getProducts:     (params) => API.get('/store/products/', { params }),
-  getProductBySlug:(slug)   => API.get(`/store/products/${slug}/`),
-  getProduct:      (slug)   => API.get(`/store/products/${slug}/`),  // alias used in ProductDetail
-  searchProducts:  (q)      => API.get('/store/search/', { params: { q } }),
+  getCategories: () => API.get('/store/categories/'),
+  getProducts: (params) => API.get('/store/products/', { params }),
+  getProductBySlug: (slug) => API.get(`/store/products/${slug}/`),
+  getProduct: (slug) => API.get(`/store/products/${slug}/`),  // alias used in ProductDetail
+  searchProducts: (q) => API.get('/store/search/', { params: { q } }),
 };
 
 // Cart
 export const cartAPI = {
-  getCart:        ()                    => API.get('/orders/cart/'),
-  addToCart:      (productId, quantity) => API.post('/orders/cart/', { product_id: productId, quantity }),
-  updateCart:     (itemId, quantity)    => API.patch(`/orders/cart/${itemId}/`, { quantity }),
-  removeFromCart: (itemId)              => API.delete(`/orders/cart/${itemId}/`),
-  clearCart:      ()                    => API.delete('/orders/cart/'),
+  getCart: () => API.get('/orders/cart/'),
+  addToCart: (productId, quantity) => API.post('/orders/cart/', { product_id: productId, quantity }),
+  updateCart: (itemId, quantity) => API.patch(`/orders/cart/${itemId}/`, { quantity }),
+  removeFromCart: (itemId) => API.delete(`/orders/cart/${itemId}/`),
+  clearCart: () => API.delete('/orders/cart/'),
 };
 
 // Orders  ← checkout now accepts FormData automatically
 export const ordersAPI = {
-  getOrders:   ()                  => API.get('/orders/'),
-  getOrder:    (orderNumber)       => API.get(`/orders/${orderNumber}/`),
-  trackOrder:  (orderNumber)       => API.get(`/orders/track/${orderNumber}/`),
+  getOrders: () => API.get('/orders/'),
+  getOrder: (orderNumber) => API.get(`/orders/${orderNumber}/`),
+  trackOrder: (orderNumber) => API.get(`/orders/track/${orderNumber}/`),
   updateOrder: (orderNumber, data) => API.patch(`/orders/${orderNumber}/`, data),
-  checkout:    (data)   => {
+  checkout: (data) => {
     // If FormData is passed (has screenshot), use multipart header
     const isFormData = data instanceof FormData;
     return API.post('/orders/checkout/', data, {
       headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {},
     });
   },
+};
+
+// Reviews
+export const reviewsAPI = {
+  getReviews: () => API.get('/reviews/'),
+  getStats:   () => API.get('/reviews/stats/'),
 };
 
 // Interceptor — attach JWT token
@@ -68,7 +74,7 @@ API.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refresh  = localStorage.getItem('refresh_token');
+        const refresh = localStorage.getItem('refresh_token');
         const newToken = await authAPI.refreshToken(refresh);
         localStorage.setItem('access_token', newToken.data.tokens.access);
         originalRequest.headers.Authorization = `Bearer ${newToken.data.tokens.access}`;
@@ -84,5 +90,7 @@ API.interceptors.response.use(
 );
 
 export default API;
+
+
 
 

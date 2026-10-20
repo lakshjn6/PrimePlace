@@ -48,3 +48,17 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
         reviews = self.get_queryset()
         serializer = self.get_serializer(reviews, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        from django.db.models import Avg, Count
+        agg = SiteReview.objects.filter(is_active=True).aggregate(
+            avg_rating=Avg('rating'),
+            count=Count('id')
+        )
+        avg = agg['avg_rating']
+        avg_val = round(float(avg), 1) if avg is not None else 5.0
+        return Response({
+            'average_rating': avg_val,
+            'total_reviews': agg['count'] or 0
+        })
