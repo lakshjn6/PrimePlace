@@ -52,6 +52,9 @@ class Order(models.Model):
     status       = models.CharField(max_length=20, choices=STATUS_CHOICES,
                                     default='pending')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    profit       = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                       verbose_name="Profit",
+                                       help_text="Admin only: profit earned from this order (written upon delivery)")
     your_order   = models.TextField(blank=True, default='', verbose_name="Your Order",
                                     help_text="Order delivery details / message shown to the customer when order is Paid")
     created_at   = models.DateTimeField(auto_now_add=True)

@@ -24,3 +24,20 @@ class AccountAdmin(UserAdmin):
     )
 
 admin.site.register(Account, AccountAdmin)
+
+
+from .models import EmailVerificationToken, PasswordResetToken
+
+@admin.register(EmailVerificationToken)
+class EmailVerificationTokenAdmin(admin.ModelAdmin):
+    list_display = ('user', 'token', 'created_at')
+    search_fields = ('user__email', 'token')
+    readonly_fields = ('created_at',)
+
+
+@admin.register(PasswordResetToken)
+class PasswordResetTokenAdmin(admin.ModelAdmin):
+    list_display = ('user', 'token', 'created_at')
+    search_fields = ('user__email', 'token')
+    readonly_fields = ('created_at',)
+

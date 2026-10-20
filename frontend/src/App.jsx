@@ -16,6 +16,8 @@ import CurrencyToggle from './components/CurrencyToggle';
 import Home          from './pages/Home';
 import Register      from './pages/Register';
 import Login         from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword  from './pages/ResetPassword';
 import Products      from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Cart          from './pages/Cart';
@@ -43,6 +45,8 @@ export default function App() {
               <Route path="/review"        element={<Home scrollToReviews />} />
               <Route path="/register"      element={<Register />} />
               <Route path="/login"         element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password"  element={<ResetPassword />} />
               <Route path="/products"      element={<Products />} />
               <Route path="/products/:slug" element={<ProductDetail />} />
 

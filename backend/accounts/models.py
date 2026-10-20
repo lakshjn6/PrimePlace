@@ -83,3 +83,17 @@ class EmailVerificationToken(models.Model):
         from django.utils import timezone
         from datetime import timedelta
         return timezone.now() > self.created_at + timedelta(hours=24)
+
+
+class PasswordResetToken(models.Model):
+    user       = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='password_reset_tokens')
+    token      = models.UUIDField(default=uuid.uuid4, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reset token for {self.user.email}"
+
+    def is_expired(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        return timezone.now() > self.created_at + timedelta(hours=24)

@@ -162,3 +162,39 @@ class OrderDetailView(APIView):
         else:
             order = get_object_or_404(Order, order_number=order_number, user=request.user)
         return Response(OrderSerializer(order, context={'request': request}).data)
+
+    def patch(self, request, order_number):
+        if not request.user.is_admin:
+            return Response({'error': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+        order = get_object_or_404(Order, order_number=order_number)
+
+        if 'profit' in request.data:
+            val = request.data.get('profit')
+            if val in ('', None):
+                order.profit = None
+            else:
+                try:
+                    order.profit = Decimal(str(val))
+                except Exception:
+                    return Response({'error': 'Invalid profit amount.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'your_order' in request.data:
+            order.your_order = request.data.get('your_order', '')
+
+        if 'status' in request.data:
+            old_status = order.status
+            new_status = request.data.get('status')
+            order.status = new_status
+            if old_status != 'paid' and new_status == 'paid':
+                if hasattr(order, 'payment') and order.payment:
+                    order.payment.status = 'success'
+                    order.payment.save(update_fields=['status'])
+                from .email_utils import send_order_delivered_email
+                try:
+                    send_order_delivered_email(order)
+                except Exception as e:
+                    print(f"Delivery email error: {e}")
+
+        order.save()
+        return Response(OrderSerializer(order, context={'request': request}).data)
+

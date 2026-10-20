@@ -12,6 +12,9 @@ export const authAPI = {
   logout:             ()        => API.post('/auth/logout/'),
   verifyEmail:        (token)   => API.get(`/auth/verify-email/?token=${token}`),
   resendVerification: (email)   => API.post('/auth/resend-verification/', { email }),
+  forgotPassword:     (email)   => API.post('/auth/forgot-password/', { email }),
+  verifyResetToken:   (token)   => API.get(`/auth/verify-reset-token/?token=${token}`),
+  resetPassword:      (data)    => API.post('/auth/reset-password/', data),
   getProfile:         ()        => API.get('/auth/profile/'),
   updateProfile:      (data)    => API.put('/auth/profile/', data),
   refreshToken:       (refresh) => API.post('/token/refresh/', { refresh }),
@@ -37,8 +40,10 @@ export const cartAPI = {
 
 // Orders  ← checkout now accepts FormData automatically
 export const ordersAPI = {
-  getOrders: ()       => API.get('/orders/'),
-  checkout:  (data)   => {
+  getOrders:   ()                  => API.get('/orders/'),
+  getOrder:    (orderNumber)       => API.get(`/orders/${orderNumber}/`),
+  updateOrder: (orderNumber, data) => API.patch(`/orders/${orderNumber}/`, data),
+  checkout:    (data)   => {
     // If FormData is passed (has screenshot), use multipart header
     const isFormData = data instanceof FormData;
     return API.post('/orders/checkout/', data, {

@@ -67,11 +67,12 @@ class OrderSerializer(serializers.ModelSerializer):
     payment = PaymentSerializer(read_only=True)
     user_email = serializers.CharField(source='user.email', read_only=True)
     your_order = serializers.SerializerMethodField()
+    profit     = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
 
     class Meta:
         model  = Order
         fields = ['id', 'order_number', 'user_email', 'status',
-                  'total_amount', 'your_order', 'items', 'payment', 'created_at']
+                  'total_amount', 'profit', 'your_order', 'items', 'payment', 'created_at']
 
     def get_your_order(self, obj):
         request = self.context.get('request')
@@ -79,6 +80,14 @@ class OrderSerializer(serializers.ModelSerializer):
         if obj.status == 'paid' or is_admin:
             return obj.your_order or ''
         return ''
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        is_admin = bool(request and request.user and getattr(request.user, 'is_admin', False))
+        if not is_admin:
+            data.pop('profit', None)
+        return data
 
 
 class CheckoutSerializer(serializers.Serializer):

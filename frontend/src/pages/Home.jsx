@@ -62,6 +62,108 @@ export default function Home({ scrollToReviews = false }) {
 
   return (
     <div style={s.page}>
+      <style>{`
+        /* Categories: 3 small boxes per line, full image on top */
+        .home-cat-card {
+          background: #0e0e12;
+          border: 1px solid #1e1e2e;
+          border-radius: 12px;
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          overflow: hidden;
+          position: relative;
+        }
+        .home-cat-card:hover {
+          border-color: #7c5cfc;
+          transform: translateY(-3px);
+          box-shadow: 0 8px 22px rgba(124, 92, 252, 0.22);
+          background: #13121d;
+        }
+        .home-cat-img-wrap {
+          width: 100%;
+          height: 64px;
+          background: #111118;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+        }
+        .home-cat-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.3s ease;
+        }
+        .home-cat-card:hover .home-cat-img {
+          transform: scale(1.06);
+        }
+        .home-cat-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: radial-gradient(circle, #201a3a 0%, #0d0d14 100%);
+        }
+        .home-cat-icon {
+          font-size: 26px;
+          line-height: 1;
+        }
+        .home-cat-body {
+          padding: 7px 4px 8px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .home-cat-name {
+          color: #fff;
+          font-weight: 700;
+          font-size: 11px;
+          line-height: 1.25;
+          text-align: center;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          width: 100%;
+          word-break: break-word;
+        }
+        .home-cat-count {
+          color: #777;
+          font-size: 9.5px;
+          margin-top: 2px;
+        }
+
+        @media (min-width: 768px) {
+          .home-cat-card {
+            border-radius: 16px;
+          }
+          .home-cat-img-wrap {
+            height: 90px;
+          }
+          .home-cat-icon {
+            font-size: 36px;
+          }
+          .home-cat-body {
+            padding: 10px 8px 12px;
+          }
+          .home-cat-name {
+            font-size: 13.5px;
+          }
+          .home-cat-count {
+            font-size: 11px;
+            margin-top: 3px;
+          }
+        }
+      `}</style>
 
       {/* Hero with Diwali Festive Effects */}
       <section style={s.hero}>
@@ -105,8 +207,14 @@ export default function Home({ scrollToReviews = false }) {
       </section>
 
       {/* Categories */}
-      <section style={{ ...s.section, padding: isMobile ? '32px 16px' : '60px 24px' }}>
-        <h2 style={{ ...s.sectionTitle, fontSize: isMobile ? 22 : 32 }}>Browse by Category</h2>
+      <section style={{ ...s.section, padding: isMobile ? '28px 14px' : '56px 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: isMobile ? 14 : 20 }}>
+          <h2 style={{ ...s.sectionTitle, fontSize: isMobile ? 20 : 30, margin: 0 }}>Browse by Category</h2>
+          <Link to="/products" style={{ color: '#7c5cfc', fontSize: isMobile ? 12 : 14, fontWeight: 600, textDecoration: 'none' }}>
+            View all →
+          </Link>
+        </div>
+
         {loading ? (
           <p style={s.loading}>Loading...</p>
         ) : categories.length === 0 ? (
@@ -115,20 +223,26 @@ export default function Home({ scrollToReviews = false }) {
             <p style={{ color: '#555', marginTop: 8 }}>No categories yet.</p>
           </div>
         ) : (
-          <div style={{
-            ...s.catGrid,
-            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(160px, 1fr))',
+          <div className="home-cat-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(auto-fill, minmax(130px, 1fr))',
+            gap: isMobile ? '8px' : '16px',
           }}>
             {categories.map(cat => (
-              <Link key={cat.id} to={`/products?category=${cat.slug}`} style={s.catCard}>
-                <div style={s.catImgWrap}>
-                  {cat.image_url
-                    ? <img src={cat.image_url} alt={cat.name} style={s.catImg} />
-                    : <span style={s.catIcon}>{cat.icon || '📦'}</span>
-                  }
+              <Link key={cat.id} to={`/products?category=${cat.slug}`} className="home-cat-card">
+                <div className="home-cat-img-wrap">
+                  {cat.image_url ? (
+                    <img src={cat.image_url} alt={cat.name} className="home-cat-img" />
+                  ) : (
+                    <div className="home-cat-placeholder">
+                      <span className="home-cat-icon">{cat.icon || '📦'}</span>
+                    </div>
+                  )}
                 </div>
-                <span style={s.catName}>{cat.name}</span>
-                <span style={s.catCount}>{cat.product_count} plan{cat.product_count !== 1 ? 's' : ''}</span>
+                <div className="home-cat-body">
+                  <span className="home-cat-name">{cat.name}</span>
+                  <span className="home-cat-count">{cat.product_count} plan{cat.product_count !== 1 ? 's' : ''}</span>
+                </div>
               </Link>
             ))}
           </div>
@@ -137,18 +251,21 @@ export default function Home({ scrollToReviews = false }) {
 
       {/* Featured Plans */}
       {featured.length > 0 && (
-        <section style={{ ...s.section, padding: isMobile ? '32px 16px' : '60px 24px' }}>
+        <section style={{ ...s.section, padding: isMobile ? '28px 14px' : '60px 24px' }}>
           
-          <h2 style={{ ...s.sectionTitle, fontSize: isMobile ? 22 : 32 }}>Featured Plans</h2>
+          <h2 style={{ ...s.sectionTitle, fontSize: isMobile ? 20 : 32, marginBottom: isMobile ? 14 : 22 }}>
+            Featured Plans
+          </h2>
           <div style={{
             ...s.prodGrid,
-            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: isMobile ? '10px 8px' : '20px',
           }}>
             {featured.map(p => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} isMobile={isMobile} />
             ))}
           </div>
-          <div style={{ textAlign: 'center', marginTop: 28 }}>
+          <div style={{ textAlign: 'center', marginTop: isMobile ? 22 : 32 }}>
             <Link to="/products" style={s.ctaPrimary}>View All Plans</Link>
           </div>
         </section>
@@ -188,7 +305,7 @@ const GRADIENTS = [
   'linear-gradient(135deg, #1a1a00 0%, #5c5a00 50%, #d4c400 100%)',
 ];
 
-function ProductCard({ product }) {
+function ProductCard({ product, isMobile = false }) {
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const [imgError, setImgError] = React.useState(false);
@@ -197,9 +314,9 @@ function ProductCard({ product }) {
   const showDiscount = hasZeroOrders && product.discounted_price !== null && product.discounted_price !== undefined;
 
   return (
-    <Link to={`/products/${product.slug}`} style={s.prodCard}>
+    <Link to={`/products/${product.slug}`} style={{ ...s.prodCard, borderRadius: isMobile ? 14 : 20 }}>
       {/* Image area — always visible */}
-      <div style={s.prodImgWrapper}>
+      <div style={{ ...s.prodImgWrapper, height: isMobile ? 115 : 160 }}>
         {product.image_url && !imgError ? (
           <img
             src={product.image_url}
@@ -209,33 +326,62 @@ function ProductCard({ product }) {
           />
         ) : (
           <div style={{ ...s.prodImgPlaceholder, background: gradient }}>
-            <span style={s.prodPlaceholderIcon}>
+            <span style={{ ...s.prodPlaceholderIcon, fontSize: isMobile ? 32 : 44 }}>
               {product.category_icon || '📦'}
             </span>
           </div>
         )}
       </div>
-      <div style={s.prodCatBadge}>{product.category_name}</div>
-      <h3 style={s.prodName}>{product.name}</h3>
-      <p style={s.prodDesc}>
-        {product.description.length > 90
-          ? product.description.slice(0, 90) + '…'
+      <div style={{
+        ...s.prodCatBadge,
+        fontSize: isMobile ? 9 : 10,
+        padding: isMobile ? '2px 7px' : '3px 9px',
+        margin: isMobile ? '8px 10px 0' : '14px 14px 0'
+      }}>
+        {product.category_name}
+      </div>
+      <h3 style={{
+        ...s.prodName,
+        fontSize: isMobile ? 13 : 16,
+        margin: isMobile ? '4px 10px 0' : '6px 14px 0',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+      }}>
+        {product.name}
+      </h3>
+      <p style={{
+        ...s.prodDesc,
+        fontSize: isMobile ? 11 : 13,
+        lineHeight: 1.35,
+        margin: isMobile ? '3px 10px 0' : '6px 14px 0',
+        WebkitLineClamp: 2,
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+      }}>
+        {product.description.length > (isMobile ? 50 : 90)
+          ? product.description.slice(0, isMobile ? 50 : 90) + '…'
           : product.description}
       </p>
-      <div style={s.prodFooter}>
+      <div style={{
+        ...s.prodFooter,
+        margin: isMobile ? '8px 10px 10px' : '10px 14px 14px',
+        gap: isMobile ? 2 : 4,
+      }}>
         {showDiscount ? (
           <div>
-            <span style={{ textDecoration: 'line-through', color: '#777', fontSize: 16, marginRight: 8 }}>
+            <span style={{ textDecoration: 'line-through', color: '#777', fontSize: isMobile ? 11 : 16, marginRight: 4 }}>
               {formatPrice(product.price)}
             </span>
-            <span style={{ ...s.prodPrice, color: '#1db954' }}>
+            <span style={{ ...s.prodPrice, color: '#1db954', fontSize: isMobile ? 16 : 22 }}>
               {parseFloat(product.discounted_price) === 0 ? 'FREE (₹0)' : formatPrice(product.discounted_price)}
             </span>
           </div>
         ) : (
-          <span style={s.prodPrice}>{formatPrice(product.price)}</span>
+          <span style={{ ...s.prodPrice, fontSize: isMobile ? 16 : 22 }}>{formatPrice(product.price)}</span>
         )}
-        <span style={s.prodCycle}>/{product.billing_cycle}</span>
+        <span style={{ ...s.prodCycle, fontSize: isMobile ? 10.5 : 12 }}>/{product.billing_cycle}</span>
       </div>
     </Link>
   );

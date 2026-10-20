@@ -51,7 +51,12 @@ export default function Login() {
             />
           </div>
           <div style={s.field}>
-            <label style={s.label}>Password</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label style={s.label}>Password</label>
+              <Link to="/forgot-password" style={{ color: '#7c5cfc', fontSize: 12, textDecoration: 'none', fontWeight: 600 }}>
+                Forgot password?
+              </Link>
+            </div>
             <input
               style={s.input} type="password" name="password"
               placeholder="Your password"

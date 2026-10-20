@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Account, EmailVerificationToken
+from .models import Account, EmailVerificationToken, PasswordResetToken
 from .serializers import RegisterSerializer, LoginSerializer, AccountSerializer
-from .email_utils import send_verification_email
+from .email_utils import send_verification_email, send_password_reset_email
 
 
 def get_tokens_for_user(user):
@@ -138,3 +138,91 @@ class UserListView(APIView):
             return Response({'error': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
         users = Account.objects.all().order_by('-date_joined')
         return Response(AccountSerializer(users, many=True).data)
+
+
+class ForgotPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email', '').strip()
+        if not email:
+            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = Account.objects.get(email__iexact=email)
+        except Account.DoesNotExist:
+            return Response({'error': 'No account found with that email address.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Clear existing reset tokens for this user
+        PasswordResetToken.objects.filter(user=user).delete()
+        token_obj = PasswordResetToken.objects.create(user=user)
+
+        print(f"DEBUG FORGOT PASSWORD TOKEN: {token_obj.token} FOR {user.email}")
+        try:
+            send_password_reset_email(user, token_obj.token)
+        except Exception as e:
+            print(f"Password reset email send failed: {e}")
+            return Response({'error': f'Failed to send reset email: {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            'message': 'Password reset link sent! Please check your email inbox.'
+        }, status=status.HTTP_200_OK)
+
+
+class VerifyResetTokenView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        token = request.query_params.get('token')
+        if not token:
+            return Response({'error': 'Token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token_obj = PasswordResetToken.objects.select_related('user').get(token=token)
+        except (PasswordResetToken.DoesNotExist, ValueError):
+            return Response({'error': 'Invalid or expired password reset link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if token_obj.is_expired():
+            token_obj.delete()
+            return Response({'error': 'Reset link has expired. Please request a new one.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'valid': True,
+            'email': token_obj.user.email
+        }, status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        password = request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+
+        if not token:
+            return Response({'error': 'Reset token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not password:
+            return Response({'error': 'New password is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(password) < 6:
+            return Response({'error': 'Password must be at least 6 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
+        if confirm_password is not None and password != confirm_password:
+            return Response({'error': 'Passwords do not match.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            token_obj = PasswordResetToken.objects.select_related('user').get(token=token)
+        except (PasswordResetToken.DoesNotExist, ValueError):
+            return Response({'error': 'Invalid or expired reset token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if token_obj.is_expired():
+            token_obj.delete()
+            return Response({'error': 'Reset token expired. Please request a new link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = token_obj.user
+        user.set_password(password)
+        user.save()
+        PasswordResetToken.objects.filter(user=user).delete()
+
+        return Response({
+            'message': 'Password has been reset successfully! You can now sign in.'
+        }, status=status.HTTP_200_OK)

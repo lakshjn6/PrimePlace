@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ordersAPI } from '../api/client';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const STATUS_COLORS = {
   pending:   { bg:'rgba(245,166,35,0.1)',  color:'#f5a623' },
@@ -11,16 +13,38 @@ const STATUS_COLORS = {
 };
 
 export default function Orders() {
+  const { user } = useAuth();
   const { formatPrice } = useCurrency();
   const [orders,   setOrders]   = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [copiedId, setCopiedId] = useState(null);
+
+  // Admin profit edit state
+  const [editingProfitId, setEditingProfitId] = useState(null);
+  const [profitInput, setProfitInput] = useState('');
+  const [savingProfit, setSavingProfit] = useState(false);
 
   const handleCopy = (text, id) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleSaveProfit = async (order) => {
+    setSavingProfit(true);
+    try {
+      const res = await ordersAPI.updateOrder(order.order_number, {
+        profit: profitInput === '' ? null : profitInput,
+      });
+      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, profit: res.data.profit } : o));
+      setEditingProfitId(null);
+      toast.success(`Profit updated for #${order.order_number}`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update profit.');
+    } finally {
+      setSavingProfit(false);
+    }
   };
 
   useEffect(() => {
@@ -40,8 +64,22 @@ export default function Orders() {
     <>
       <style>{`
         .ord-page      { background:#060608; min-height:100vh; color:#fff; }
-        .ord-container { max-width:800px; margin:0 auto; padding:48px 24px; box-sizing:border-box; }
-        .ord-title     { font-size:36px; font-weight:800; margin-bottom:36px; font-family:Georgia,serif; }
+        .ord-container { max-width:860px; margin:0 auto; padding:48px 24px; box-sizing:border-box; }
+        .ord-title-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+        .ord-title     { font-size:36px; font-weight:800; margin:0; font-family:Georgia,serif; }
+
+        .ord-admin-badge {
+          background: rgba(124, 92, 252, 0.15);
+          border: 1px solid rgba(124, 92, 252, 0.35);
+          color: #c4b5fd;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 13px;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
 
         .ord-empty {
           text-align:center; padding:80px 0;
@@ -57,6 +95,10 @@ export default function Orders() {
         .ord-card {
           background:#0e0e12; border:1px solid #1e1e2e;
           border-radius:20px; padding:28px;
+          transition: border-color 0.2s ease;
+        }
+        .ord-card:hover {
+          border-color: #2a2a3e;
         }
         .ord-card-header {
           display:flex; justify-content:space-between;
@@ -64,6 +106,7 @@ export default function Orders() {
         }
         .ord-num    { color:#fff; font-weight:700; font-size:18px; }
         .ord-date   { color:#555; font-size:13px; margin-top:4px; }
+        .ord-user-tag { color: #a78bfa; font-size: 13px; margin-top: 4px; font-weight: 500; }
         .ord-badge  { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:1px; flex-shrink:0; }
 
         .ord-pending-msg {
@@ -155,15 +198,27 @@ export default function Orders() {
 
         .ord-card-footer {
           display:flex; justify-content:space-between;
-          align-items:center; flex-wrap:wrap; gap:8px;
+          align-items:center; flex-wrap:wrap; gap:12px;
+          padding-top:14px; border-top:1px solid #161622;
         }
-        .ord-total  { color:#aaa; font-size:16px; }
-        .ord-ref    { color:#444; font-size:12px; }
+        .ord-total  { color:#aaa; font-size:15px; }
+        .ord-ref    { color:#555; font-size:12px; }
+
+        /* Admin Profit Styling */
+        .ord-admin-profit {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(16, 185, 129, 0.08);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          border-radius: 8px;
+          padding: 4px 10px;
+        }
 
         /* Mobile */
         @media (max-width: 600px) {
           .ord-container { padding:24px 16px; }
-          .ord-title     { font-size:26px; margin-bottom:20px; }
+          .ord-title     { font-size:26px; }
           .ord-card      { padding:16px; border-radius:14px; }
           .ord-num       { font-size:15px; }
           .ord-item-name { font-size:14px; }
@@ -173,7 +228,14 @@ export default function Orders() {
 
       <div className="ord-page">
         <div className="ord-container">
-          <h1 className="ord-title">My Orders</h1>
+          <div className="ord-title-row">
+            <h1 className="ord-title">{user?.is_admin ? 'All Orders' : 'My Orders'}</h1>
+            {user?.is_admin && (
+              <span className="ord-admin-badge">
+                🛡️ Admin Mode · Total Orders: {orders.length}
+              </span>
+            )}
+          </div>
 
           {orders.length === 0 ? (
             <div className="ord-empty">
@@ -192,6 +254,9 @@ export default function Orders() {
                     <div className="ord-card-header">
                       <div>
                         <div className="ord-num">#{order.order_number}</div>
+                        {user?.is_admin && order.user_email && (
+                          <div className="ord-user-tag">👤 Customer: {order.user_email}</div>
+                        )}
                         <div className="ord-date">
                           {new Date(order.created_at).toLocaleDateString('en-IN', {
                             year:'numeric', month:'long', day:'numeric'
@@ -263,9 +328,98 @@ export default function Orders() {
                     </div>
 
                     <div className="ord-card-footer">
-                      <div className="ord-total">
-                        Total: <strong style={{color:'#7c5cfc'}}>{formatPrice(order.total_amount)}</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
+                        <div className="ord-total">
+                          Total: <strong style={{color:'#7c5cfc'}}>{formatPrice(order.total_amount)}</strong>
+                        </div>
+
+                        {/* Admin-only Profit Column / Field */}
+                        {user?.is_admin && (
+                          <div className="ord-admin-profit">
+                            <span style={{ fontSize: 13, color: '#10b981', fontWeight: 700 }}>
+                              💰 Profit:
+                            </span>
+
+                            {editingProfitId === order.id ? (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ color: '#888', fontSize: 12 }}>₹</span>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={profitInput}
+                                  onChange={(e) => setProfitInput(e.target.value)}
+                                  placeholder="0.00"
+                                  style={{
+                                    width: 85,
+                                    background: '#090a10',
+                                    border: '1px solid #10b981',
+                                    borderRadius: 6,
+                                    color: '#fff',
+                                    padding: '3px 8px',
+                                    fontSize: 13,
+                                    outline: 'none',
+                                  }}
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => handleSaveProfit(order)}
+                                  disabled={savingProfit}
+                                  style={{
+                                    background: '#10b981',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    padding: '4px 10px',
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  {savingProfit ? '...' : 'Save'}
+                                </button>
+                                <button
+                                  onClick={() => setEditingProfitId(null)}
+                                  style={{
+                                    background: 'transparent',
+                                    color: '#888',
+                                    border: '1px solid #333',
+                                    borderRadius: 6,
+                                    padding: '4px 8px',
+                                    fontSize: 12,
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <span
+                                onClick={() => {
+                                  setEditingProfitId(order.id);
+                                  setProfitInput(order.profit !== null && order.profit !== undefined ? order.profit : '');
+                                }}
+                                title="Click to edit profit"
+                                style={{
+                                  cursor: 'pointer',
+                                  color: order.profit ? '#34d399' : '#888',
+                                  fontSize: 13,
+                                  fontWeight: 600,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                }}
+                              >
+                                {order.profit !== null && order.profit !== undefined && order.profit !== '' ? (
+                                  <>₹{order.profit} <span style={{ fontSize: 11, color: '#aaa' }}>✎</span></>
+                                ) : (
+                                  <span style={{ fontStyle: 'italic', color: '#777', textDecoration: 'underline' }}>+ Write profit</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
+
                       {order.payment && (
                         <div className="ord-ref">Ref: {order.payment.transaction_ref}</div>
                       )}

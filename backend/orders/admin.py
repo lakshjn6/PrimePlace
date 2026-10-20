@@ -30,13 +30,15 @@ class PaymentInline(admin.StackedInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display    = ('order_number', 'user', 'status', 'total_amount', 'created_at')
-    list_filter     = ('status',)
-    search_fields   = ('order_number', 'user__email')
-    inlines         = [OrderItemInline, PaymentInline]
-    readonly_fields = ('order_number', 'total_amount', 'created_at', 'updated_at')
-    fields          = ('order_number', 'user', 'status', 'total_amount', 'your_order', 'created_at', 'updated_at')
-    actions         = ['mark_as_paid']
+    list_display       = ('order_number', 'user', 'status', 'total_amount', 'profit', 'created_at')
+    list_editable      = ('profit',)
+    list_display_links = ('order_number',)
+    list_filter        = ('status',)
+    search_fields      = ('order_number', 'user__email')
+    inlines            = [OrderItemInline, PaymentInline]
+    readonly_fields    = ('order_number', 'total_amount', 'created_at', 'updated_at')
+    fields             = ('order_number', 'user', 'status', 'total_amount', 'profit', 'your_order', 'created_at', 'updated_at')
+    actions            = ['mark_as_paid']
     formfield_overrides = {
         models.TextField: {'widget': forms.Textarea(attrs={'rows': 3, 'cols': 70, 'placeholder': 'General order delivery notes / access details shown to user when status is Paid...'})},
     }
