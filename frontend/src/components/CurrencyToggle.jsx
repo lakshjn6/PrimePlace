@@ -35,11 +35,13 @@ export default function CurrencyToggle() {
         .currency-toggle-pill {
           display: inline-flex;
           align-items: center;
-          background: rgba(14, 14, 22, 0.85);
+          height: 42px;
+          box-sizing: border-box;
+          background: #ffffff;
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(124, 92, 252, 0.35);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(124, 92, 252, 0.2);
+          border: 1px solid rgba(124, 92, 252, 0.25);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(124, 92, 252, 0.1);
           border-radius: 999px;
           padding: 4px;
           cursor: pointer;
@@ -47,20 +49,23 @@ export default function CurrencyToggle() {
         }
 
         .currency-toggle-pill:hover {
-          border-color: rgba(124, 92, 252, 0.7);
-          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 28px rgba(124, 92, 252, 0.35);
+          border-color: rgba(124, 92, 252, 0.65);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16), 0 0 20px rgba(124, 92, 252, 0.25);
           transform: translateY(-2px);
         }
 
         .currency-btn {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
-          padding: 7px 14px;
+          height: 32px;
+          box-sizing: border-box;
+          padding: 0 14px;
           border-radius: 999px;
           font-size: 13px;
           font-weight: 700;
-          color: #8888aa;
+          color: #475569;
           background: transparent;
           border: none;
           cursor: pointer;
@@ -71,12 +76,12 @@ export default function CurrencyToggle() {
         .currency-btn.active {
           color: #ffffff;
           background: linear-gradient(135deg, #7c5cfc 0%, #5833ea 100%);
-          box-shadow: 0 2px 12px rgba(124, 92, 252, 0.5);
+          box-shadow: 0 2px 10px rgba(124, 92, 252, 0.4);
         }
 
         .currency-btn:hover:not(.active) {
-          color: #ffffff;
-          background: rgba(255, 255, 255, 0.06);
+          color: #0f172a;
+          background: #f1f5f9;
         }
 
         .currency-symbol {
@@ -85,17 +90,16 @@ export default function CurrencyToggle() {
         }
 
         .currency-rate-hint {
-          background: rgba(10, 10, 16, 0.9);
-          backdrop-filter: blur(8px);
-          border: 1px solid #222238;
-          color: #8888aa;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          color: #334155;
           padding: 6px 10px;
           border-radius: 8px;
           font-size: 11px;
           font-weight: 600;
           white-space: nowrap;
           pointer-events: none;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
           opacity: 0;
           transform: translateX(6px);
           transition: all 0.2s ease;
@@ -111,8 +115,13 @@ export default function CurrencyToggle() {
             bottom: 16px;
             right: 16px;
           }
+          .currency-toggle-pill {
+            height: 38px;
+            padding: 3px;
+          }
           .currency-btn {
-            padding: 6px 11px;
+            height: 30px;
+            padding: 0 11px;
             font-size: 12px;
           }
           .currency-rate-hint {

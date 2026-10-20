@@ -234,7 +234,7 @@ const s = {
   footer: {
     background: 'linear-gradient(180deg, #0a0a10 0%, #0d0d18 100%)',
     borderTop: '1px solid #1e1e35',
-    padding: '36px 24px 24px',
+    padding: '36px 24px 140px',
     position: 'relative',
     overflow: 'hidden',
     marginTop: 60,
@@ -289,6 +289,7 @@ const s = {
   bottomBar: {
     display: 'flex', alignItems: 'center',
     justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
+    paddingBottom: 24,
   },
   copy: { fontSize: 11, color: '#333' },
   privacyBtn: {

@@ -33,8 +33,9 @@ export default function ReviewSection() {
   const loadReviews = async () => {
     setLoading(true);
     try {
-      const response = await API.get('/reviews/latest/');
-      setReviews(response.data);
+      const response = await API.get('/reviews/');
+      const data = response.data;
+      setReviews(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       setReviews([]);
     } finally {
@@ -76,13 +77,13 @@ export default function ReviewSection() {
     </div>
   );
 
-  const topReviews = reviews.slice(0, 4);
+  const homeReviews = reviews.slice(0, 6);
 
   const ReviewCard = ({ review }) => (
-    <div style={s.reviewCard}>
+    <div style={s.reviewCard} className="pm-review-card">
       <div style={s.reviewHeader}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h4 style={s.reviewName}>
+          <h4 style={s.reviewName} className="pm-review-name">
             <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
               {review.user_name}
             </span>
@@ -92,7 +93,7 @@ export default function ReviewSection() {
         </div>
         {renderStars(review.rating)}
       </div>
-      <p style={s.reviewMessage}>{review.message}</p>
+      <p style={s.reviewMessage} className="pm-review-msg">{review.message}</p>
     </div>
   );
 
@@ -147,11 +148,17 @@ export default function ReviewSection() {
           text-align:center; color:#555; font-size:12px;
         }
 
-        /* ── Reviews grid — 2 col desktop, 1 col mobile ── */
+        /* ── Reviews grid — 2 per line on desktop & mobile ── */
         .rv-grid {
           display:grid;
           grid-template-columns: repeat(2, 1fr);
           gap:16px;
+        }
+
+        .rv-modal-grid {
+          display:grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap:14px;
         }
 
         /* ── Mobile ── */
@@ -162,7 +169,24 @@ export default function ReviewSection() {
             border-radius: 14px !important;
           }
           .modal-title { font-size:16px !important; }
-          .rv-grid { grid-template-columns: 1fr !important; }
+          .rv-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+          }
+          .rv-modal-grid {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+          }
+          .pm-review-card {
+            padding: 12px !important;
+          }
+          .pm-review-name {
+            font-size: 13px !important;
+          }
+          .pm-review-msg {
+            font-size: 12px !important;
+            line-height: 1.4 !important;
+          }
         }
       `}</style>
 
@@ -225,10 +249,10 @@ export default function ReviewSection() {
             </div>
           )}
 
-          {/* Top 4 Reviews */}
+          {/* 6 Reviews on Home Screen (2 per line) */}
           <div className="rv-grid">
-            {topReviews.length > 0 ? (
-              topReviews.map(review => <ReviewCard key={review.id} review={review} />)
+            {homeReviews.length > 0 ? (
+              homeReviews.map(review => <ReviewCard key={review.id} review={review} />)
             ) : (
               <div style={s.noReviews}>
                 <p>No reviews yet. Be the first to review! ⭐</p>
@@ -236,11 +260,11 @@ export default function ReviewSection() {
             )}
           </div>
 
-          {/* Load More Button */}
-          {reviews.length > 4 && (
+          {/* See All Button */}
+          {reviews.length > 6 && (
             <div style={{ textAlign:'center', marginTop:32 }}>
               <button style={s.loadMoreBtn} onClick={() => setShowAllModal(true)}>
-                View All {reviews.length} Reviews →
+                See All {reviews.length} Reviews →
               </button>
             </div>
           )}
@@ -255,10 +279,10 @@ export default function ReviewSection() {
         >
           <div className="modal-box">
             <div className="modal-header">
-              <h2 className="modal-title">All Reviews ({reviews.length})</h2>
+              <h2 className="modal-title">All Customer Reviews ({reviews.length})</h2>
               <button className="modal-close" onClick={() => setShowAllModal(false)}>✕</button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body rv-modal-grid">
               {reviews.map(review => <ReviewCard key={review.id} review={review} />)}
             </div>
             <div className="modal-footer">

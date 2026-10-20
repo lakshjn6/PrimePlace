@@ -12,6 +12,7 @@ import Footer from './pages/Footer1';
 import Navbar         from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import CurrencyToggle from './components/CurrencyToggle';
+import ChatBot        from './components/ChatBot';
 
 import Home          from './pages/Home';
 import Register      from './pages/Register';
@@ -75,6 +76,7 @@ export default function App() {
             </Routes>
             <Footer />
             <CurrencyToggle />
+            <ChatBot />
             <Toaster
               position="top-right"
               toastOptions={{

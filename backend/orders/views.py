@@ -198,3 +198,26 @@ class OrderDetailView(APIView):
         order.save()
         return Response(OrderSerializer(order, context={'request': request}).data)
 
+
+class TrackOrderView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, order_number):
+        clean_num = order_number.strip().upper()
+        order = Order.objects.filter(order_number__iexact=clean_num).select_related('user').prefetch_related('items__product').first()
+        if not order:
+            return Response({'error': f'Order #{clean_num} not found. Please verify the order number.'}, status=status.HTTP_404_NOT_FOUND)
+
+        item_names = [it.product.name for it in order.items.all() if it.product]
+        
+        return Response({
+            'order_number': order.order_number,
+            'status': order.status,
+            'total_amount': str(order.total_amount),
+            'items_count': order.items.count(),
+            'products': item_names,
+            'created_at': order.created_at,
+            'has_delivered': order.status == 'paid',
+        })
+
+

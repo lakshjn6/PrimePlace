@@ -47,10 +47,36 @@ class ProductListView(APIView):
         qs = Product.objects.filter(is_active=True)
         category_slug = request.query_params.get('category')
         featured      = request.query_params.get('featured')
+        min_price     = request.query_params.get('min_price')
+        max_price     = request.query_params.get('max_price')
+        sort          = request.query_params.get('sort')
+
         if category_slug:
             qs = qs.filter(category__slug=category_slug)
         if featured == 'true':
             qs = qs.filter(is_featured=True)
+
+        if min_price:
+            try:
+                qs = qs.filter(price__gte=float(min_price))
+            except ValueError:
+                pass
+
+        if max_price:
+            try:
+                qs = qs.filter(price__lte=float(max_price))
+            except ValueError:
+                pass
+
+        if sort in ('price_low', 'price_asc'):
+            qs = qs.order_by('price')
+        elif sort in ('price_high', 'price_desc'):
+            qs = qs.order_by('-price')
+        elif sort == 'featured':
+            qs = qs.order_by('-is_featured', '-created_at')
+        elif sort == 'newest':
+            qs = qs.order_by('-created_at')
+
         serializer = ProductSerializer(qs, many=True, context={'request': request})
         return Response(serializer.data)
 

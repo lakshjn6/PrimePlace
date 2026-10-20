@@ -18,7 +18,7 @@ class SiteReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return SiteReview.objects.filter(
             is_active=True
-        ).select_related('user').order_by('-created_at')[:5]
+        ).select_related('user').order_by('-created_at')
     
     def get_serializer_class(self):
         if self.action == 'create':

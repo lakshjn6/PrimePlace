@@ -42,6 +42,7 @@ export const cartAPI = {
 export const ordersAPI = {
   getOrders:   ()                  => API.get('/orders/'),
   getOrder:    (orderNumber)       => API.get(`/orders/${orderNumber}/`),
+  trackOrder:  (orderNumber)       => API.get(`/orders/track/${orderNumber}/`),
   updateOrder: (orderNumber, data) => API.patch(`/orders/${orderNumber}/`, data),
   checkout:    (data)   => {
     // If FormData is passed (has screenshot), use multipart header
